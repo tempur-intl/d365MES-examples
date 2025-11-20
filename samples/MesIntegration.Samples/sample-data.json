@@ -1,0 +1,37 @@
+{
+  "productionOrderNumber": "10001147",
+  "startedQuantity": 1,
+  "automaticBOMConsumptionRule": "FlushingPrincip",
+  "automaticRouteConsumptionRule": "Always",
+  "materialConsumption": [
+    {
+      "itemNumber": "20821",
+      "consumptionBOMQuantity": 2,
+      "consumptionBOMQuantityUnit": "p1",
+      "operationNumber": 10,
+      "productionSiteId": "01",
+      "productionWarehouseId": "010"
+    },
+    {
+      "itemNumber": "20697",
+      "consumptionBOMQuantity": 1,
+      "consumptionBOMQuantityUnit": "p1",
+      "operationNumber": 10,
+      "productionSiteId": "01",
+      "productionWarehouseId": "010"
+    }
+  ],
+  "reportAsFinished": {
+    "itemNumber": "83107273",
+    "reportedGoodQuantity": 1,
+    "reportedErrorQuantity": 0,
+    "productionSiteId": "01",
+    "productionWarehouseId": "010",
+    "automaticBOMConsumptionRule": "FlushingPrincip",
+    "automaticRouteConsumptionRule": "Always",
+    "licensePlateNumber": "go-test",
+    "endJob": "No",
+    "generateLicensePlate": "Yes",
+    "printLabel": "Yes"
+  }
+}

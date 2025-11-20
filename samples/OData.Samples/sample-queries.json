@@ -1,0 +1,15 @@
+{
+  "productionOrders": {
+    "filter": "ProductionOrderStatus eq Microsoft.Dynamics.DataEntities.ProdStatus'Released'",
+    "top": 10
+  },
+  "product": {
+    "productNumber": "83107273"
+  },
+  "bom": {
+    "productionOrderNumber": "10001147"
+  },
+  "route": {
+    "productionOrderNumber": "10001147"
+  }
+}
