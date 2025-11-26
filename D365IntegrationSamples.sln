@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -10,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MesIntegration.Samples", "samples\MesIntegration.Samples\MesIntegration.Samples.csproj", "{C3D4E5F6-A7B8-6C7D-AE9F-BFA9C8D7E6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OData.Samples", "samples\OData.Samples\OData.Samples.csproj", "{D4E5F6A7-B8C9-7D8E-BFA0-CBA0D9E8F7A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E9D944DE-E8CC-4536-AC84-ADF20841A52C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBusEvents.Samples", "samples\ServiceBusEvents.Samples\ServiceBusEvents.Samples.csproj", "{AED51470-71E1-4F3A-A0B4-265634C06637}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,5 +37,12 @@ Global
 		{D4E5F6A7-B8C9-7D8E-BFA0-CBA0D9E8F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4E5F6A7-B8C9-7D8E-BFA0-CBA0D9E8F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4E5F6A7-B8C9-7D8E-BFA0-CBA0D9E8F7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AED51470-71E1-4F3A-A0B4-265634C06637}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AED51470-71E1-4F3A-A0B4-265634C06637}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AED51470-71E1-4F3A-A0B4-265634C06637}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AED51470-71E1-4F3A-A0B4-265634C06637}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AED51470-71E1-4F3A-A0B4-265634C06637} = {E9D944DE-E8CC-4536-AC84-ADF20841A52C}
 	EndGlobalSection
 EndGlobal

@@ -14,7 +14,8 @@ D365IntegrationSamples/
 ├── samples/
 │   ├── InventoryVisibility.Samples/  # Inventory Visibility Add-in examples
 │   ├── MesIntegration.Samples/       # MES Integration API examples
-│   └── OData.Samples/                # OData endpoint examples
+│   ├── OData.Samples/                # OData endpoint examples
+│   └── ServiceBusEvents.Samples/     # Azure Service Bus event consumer
 └── README.md
 ```
 
@@ -56,6 +57,14 @@ OData endpoint examples for reference data:
 - ✅ Retrieve BOM information
 - ✅ Access routing data
 - ✅ Product master data
+
+### 5. **ServiceBusEvents.Samples**
+Azure Service Bus event consumer for D365 business events:
+- ✅ Consume production order released events
+- ✅ Monitor production order status changes
+- ✅ Poll once mode (testing) or continuous listening (production)
+- ✅ Dead letter queue inspection
+- ✅ Automatic retry with DLQ handling
 
 ## 🚀 Getting Started
 
@@ -106,6 +115,16 @@ dotnet run
 # Run OData samples
 cd samples/OData.Samples
 dotnet run
+
+# Run Service Bus event consumer (poll once)
+cd samples/ServiceBusEvents.Samples
+dotnet run
+
+# Run Service Bus event consumer (continuous mode)
+dotnet run -- --continuous
+
+# Check dead letter queue
+dotnet run -- --check-dlq
 ```
 
 ## 📚 Documentation
@@ -113,6 +132,7 @@ dotnet run
 - [Inventory Visibility API Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/inventory-visibility-api)
 - [MES Integration Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
 - [D365 OData Documentation](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata)
+- [Business Events Documentation](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/business-events/home-page)
 
 ## 🏭 Manufacturing Use Cases
 
@@ -123,6 +143,7 @@ These samples demonstrate common scenarios for memory foam bed manufacturing:
 3. **Production Reporting** - Track completed units and work-in-progress
 4. **Production Order Management** - Start, track, and complete production orders
 5. **Reference Data Queries** - Retrieve production orders, BOMs, and routing information
+6. **Event-Driven Integration** - React to D365 production order events via Service Bus
 
 ## 🛠️ Best Practices
 
