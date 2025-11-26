@@ -5,31 +5,37 @@ This document explains the architecture and design decisions for the D365 Integr
 ## 🏗️ High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    MES Vendor Application                   │
-│                  (Your Manufacturing Software)              │
-└────────────┬────────────┬────────────┬──────────────────────┘
-             │            │            │
-             │            │            │
-    ┌────────▼─────┐ ┌────▼───────┐ ┌──▼─────────────┐
-    │ Inventory    │ │    MES     │ │     OData      │
-    │ Visibility   │ │Integration │ │    Queries     │
-    │   Sample     │ │   Sample   │ │    Sample      │
-    └────────┬─────┘ └───┬────────┘ └─┬──────────────┘
-             │           │            │
-             └───────────┴────────────┘
-                         │
-                    ┌────▼─────┐
-                    │ D365.Auth│
-                    │  Library │
-                    └────┬─────┘
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-    ┌─────▼─────┐              ┌────────▼────────┐
-    │ Azure AD  │              │   D365 SCM      │
-    │  OAuth    │              │  Environment    │
-    └───────────┘              └─────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                       MES Vendor Application                           │
+│                     (Your Manufacturing Software)                      │
+└──┬──────────┬────────────┬────────────┬────────────────────────────────┘
+   │          │            │            │
+   │          │            │            │
+┌──▼────┐ ┌───▼───────┐ ┌──▼─────┐ ┌────▼────────┐
+│  IVA  │ │   MES     │ │ OData  │ │ Service Bus │
+│Sample │ │Integration│ │Queries │ │   Events    │
+│       │ │  Sample   │ │ Sample │ │   Sample    │
+└──┬────┘ └──┬────────┘ └──┬─────┘ └────┬────────┘
+   │         │             │            │
+   └─────────┴─────────────┘            │
+             │                          │
+        ┌────▼─────┐                    │
+        │D365.Auth │                    │
+        │ Library  │                    │
+        └────┬─────┘                    │
+             │                          │
+   ┌─────────┴─────────┐                │
+   │                   │                │
+┌──▼──────┐    ┌───────▼────────┐  ┌────▼──────────────┐
+│Azure AD │    │   D365 SCM     │  │  Azure Service    │
+│ OAuth   │    │  Environment   │  │      Bus          │
+└─────────┘    └────────┬───────┘  │ (Business Events) │
+                        │          └───────────────────┘
+                        │
+                ┌───────▼────────┐
+                │  Business Event│
+                │   Publisher    │
+                └────────────────┘
 ```
 
 ## 🔐 Authentication Architecture
@@ -98,12 +104,19 @@ samples/
 │   │   └── MesService.cs        # MES API client
 │   ├── Program.cs               # Production lifecycle
 │   └── README.md
-└── OData.Samples/
+├── OData.Samples/
+│   ├── Models/
+│   │   └── ODataModels.cs       # D365 entity models
+│   ├── Services/
+│   │   └── ODataService.cs      # OData query client
+│   ├── Program.cs               # Query examples
+│   └── README.md
+└── ServiceBusEvents.Samples/
     ├── Models/
-    │   └── ODataModels.cs       # D365 entity models
+    │   └── BusinessEventModels.cs  # D365 business event models
     ├── Services/
-    │   └── ODataService.cs      # OData query client
-    ├── Program.cs               # Query examples
+    │   └── ServiceBusConsumerService.cs  # Service Bus client
+    ├── Program.cs               # Event consumer
     └── README.md
 ```
 
@@ -172,6 +185,39 @@ D365TokenProvider.GetD365TokenAsync()
 GET from D365 OData Endpoint
     │
     └─► D365 Data Service → JSON Response
+```
+
+### Service Bus Event Flow
+
+```
+D365 Production Event
+    │
+    ▼
+Business Event Publisher
+    │
+    ▼
+Azure Service Bus Topic
+    │
+    ├─► Subscription 1 (Line 1) → SQL Filter
+    ├─► Subscription 2 (Line 2) → SQL Filter
+    └─► Subscription 3 (Line 3) → SQL Filter
+    │
+    ▼
+ServiceBusConsumerService.ReceiveMessagesAsync()
+    │
+    ├─► PeekLock Message
+    ├─► Deserialize BusinessEventEnvelope
+    ├─► Parse Event Type
+    │   ├─► ProductionOrderReleasedEvent
+    │   └─► ProductionOrderStatusChangedEvent
+    │
+    ├─► Process Message
+    │   ├─► Success → CompleteMessageAsync()
+    │   ├─► Max Retries → DeadLetterMessageAsync()
+    │   └─► Transient Error → AbandonMessageAsync()
+    │
+    ▼
+MES Application Updated
 ```
 
 ## 🎯 Design Patterns
@@ -267,6 +313,7 @@ Each API has a dedicated service:
 | DI Container | Microsoft.Extensions.DependencyInjection | 8.0 |
 | Logging | Microsoft.Extensions.Logging | 8.0 |
 | Configuration | Microsoft.Extensions.Configuration | 8.0 |
+| Service Bus | Azure.Messaging.ServiceBus | Latest |
 
 ## 📊 Data Flow
 
@@ -315,6 +362,24 @@ MES Queries Stock
 IvaService.QueryOnHandAsync()
     ↓
 Inventory Visibility Service
+```
+
+### Event-Driven (Service Bus)
+
+```
+D365 Production Order Released
+    ↓
+Business Event Published
+    ↓
+Service Bus Topic
+    ↓
+Subscription (with SQL Filter)
+    ↓
+ServiceBusConsumerService
+    ↓
+Process Event in MES
+    ↓
+(Optional) Send Response to D365
 ```
 
 ## 🔒 Security Considerations
@@ -386,25 +451,55 @@ Full workflow testing in development environment.
 - Respect D365 throttling limits
 - Queue messages during peak times
 
+## 🎉 Event-Driven Architecture
+
+### Service Bus Integration
+
+The ServiceBusEvents sample demonstrates event-driven integration with D365:
+
+**Key Features**:
+- **Topics with Subscriptions**: Pub-sub pattern for multiple consumers
+- **SQL Filters**: Server-side filtering by EventId, LegalEntity, Site, etc.
+- **PeekLock Mode**: Message processing with completion acknowledgment
+- **Automatic Retries**: MaxDeliveryCount with Dead Letter Queue
+- **Multiple Operation Modes**: Poll once (testing), continuous (production), DLQ inspection
+
+**Architecture Benefits**:
+1. **Decoupling**: MES reacts to D365 events without polling
+2. **Scalability**: Each assembly line has its own subscription
+3. **Reliability**: Automatic retries and dead letter queue
+4. **Filtering**: Only receive relevant events per line/site
+5. **Independence**: One line failure doesn't affect others
+
+**Message Flow**:
+```
+D365 Event → Service Bus Topic → Subscription Filter → MES Consumer
+                                      ↓ (if failed)
+                                 Dead Letter Queue
+```
+
 ## 🔮 Future Enhancements
 
 Potential improvements:
 
-1. **Business Events Integration**
-   - Subscribe to D365 business events
-   - Real-time notifications to MES
+1. ~~**Business Events Integration**~~ ✅ **COMPLETED**
+   - ✅ Subscribe to D365 business events via Service Bus
+   - ✅ Real-time notifications to MES
+   - ✅ Per-line subscriptions with SQL filters
 
 2. **Batch Processing**
    - Bulk insert/update operations
    - Scheduled synchronization jobs
 
-3. **Error Handling**
-   - Dead letter queue for failed messages
-   - Automatic retry with exponential backoff
+3. **Enhanced Error Handling**
+   - Exponential backoff for transient errors
+   - Alerting on dead letter queue growth
+   - Automatic replay from DLQ after fixes
 
 4. **Monitoring**
    - Application Insights integration
    - Custom metrics and alerts
+   - Service Bus metrics tracking
 
 5. **Caching Layer**
    - Redis for distributed caching
@@ -416,3 +511,5 @@ Potential improvements:
 - [D365 OData](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata)
 - [Inventory Visibility API](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/inventory-visibility-api)
 - [MES Integration](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
+- [D365 Business Events](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/business-events/home-page)
+- [Azure Service Bus](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview)
