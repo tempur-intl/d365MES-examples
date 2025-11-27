@@ -238,24 +238,28 @@ public class ServiceBusConsumerService
             _logger.LogDebug("Processing message {MessageId}, delivery count: {Count}",
                 message.MessageId, message.DeliveryCount);
 
-            // Parse the D365 business event envelope
-            var envelope = JsonSerializer.Deserialize<BusinessEventEnvelope>(bodyJson);
+            // Log raw message for debugging
+            _logger.LogTrace("Raw message body: {Body}", bodyJson);
+
+            // Parse the D365 business event envelope with custom options
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var envelope = JsonSerializer.Deserialize<BusinessEventEnvelope>(bodyJson, options);
 
             if (envelope == null)
             {
                 throw new InvalidOperationException("Failed to deserialize business event envelope");
             }
 
-            result.EventId = envelope.EventId;
+            result.EventId = envelope.BusinessEventId;
             result.EventTime = envelope.EventTime;
             result.LegalEntity = envelope.LegalEntity;
 
-            // Parse the inner business event based on EventId
-            if (envelope.BusinessEvent != null)
-            {
-                result.EventType = envelope.EventId;
-                result.EventData = ParseBusinessEvent(envelope.EventId, envelope.BusinessEvent);
-            }
+            // Parse the full message as the business event (D365 sends all data at root level)
+            result.EventType = envelope.BusinessEventId;
+            result.EventData = ParseBusinessEvent(envelope.BusinessEventId, bodyJson, options);
 
             result.Success = true;
             _logger.LogInformation("Successfully processed message {MessageId}, Event: {EventId}",
@@ -271,13 +275,13 @@ public class ServiceBusConsumerService
         }
     }
 
-    private object? ParseBusinessEvent(string? eventId, string businessEventJson)
+    private object? ParseBusinessEvent(string? eventId, string businessEventJson, JsonSerializerOptions options)
     {
         return eventId switch
         {
             "ProductionOrderReleasedBusinessEvent" =>
-                JsonSerializer.Deserialize<ProductionOrderReleasedEvent>(businessEventJson),
-            _ => JsonSerializer.Deserialize<JsonElement>(businessEventJson)
+                JsonSerializer.Deserialize<ProductionOrderReleasedEvent>(businessEventJson, options),
+            _ => JsonSerializer.Deserialize<JsonElement>(businessEventJson, options)
         };
     }
 

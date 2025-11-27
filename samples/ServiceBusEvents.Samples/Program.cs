@@ -68,9 +68,20 @@ class Program
             await consumerService.DisposeAsync();
             logger.LogInformation("\n=== Service Bus consumer completed ===");
         }
+        catch (Azure.Messaging.ServiceBus.ServiceBusException sbEx) when (sbEx.Reason == Azure.Messaging.ServiceBus.ServiceBusFailureReason.ServiceCommunicationProblem)
+        {
+            logger.LogError(sbEx, "Service Bus connection error - check network connectivity and firewall settings");
+            logger.LogError("Troubleshooting steps:");
+            logger.LogError("1. Verify Service Bus namespace networking settings in Azure Portal");
+            logger.LogError("2. Check if 'Public network access' is enabled or if you need VPN");
+            logger.LogError("3. Ensure firewall allows outbound TCP on port 5671 (AMQP)");
+            logger.LogError("4. Verify connection string has 'Listen' permissions");
+            Environment.Exit(1);
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error running Service Bus consumer");
+            Environment.Exit(1);
         }
     }
 

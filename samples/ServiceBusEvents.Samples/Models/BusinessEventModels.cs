@@ -1,6 +1,138 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ServiceBusEvents.Samples.Models;
+
+/// <summary>
+/// Custom DateTime converter for D365 business events
+/// Handles DateTime in ticks, ISO 8601, or string format
+/// </summary>
+public class D365DateTimeConverter : JsonConverter<DateTime>
+{
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        switch (reader.TokenType)
+        {
+            case JsonTokenType.String:
+                var stringValue = reader.GetString();
+                if (string.IsNullOrEmpty(stringValue))
+                {
+                    return DateTime.MinValue;
+                }
+
+                // Handle D365 /Date(ticks)/ format
+                if (stringValue.StartsWith("/Date(") && stringValue.EndsWith(")/"))
+                {
+                    var ticksString = stringValue.Substring(6, stringValue.Length - 8);
+                    if (long.TryParse(ticksString, out var milliseconds))
+                    {
+                        return DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).DateTime;
+                    }
+                }
+
+                // Try standard DateTime parsing
+                if (DateTime.TryParse(stringValue, out var dateTime))
+                {
+                    return dateTime;
+                }
+
+                throw new JsonException($"Unable to parse DateTime from string: {stringValue}");
+
+            case JsonTokenType.Number:
+                // Handle numeric ticks
+                var ticks = reader.GetInt64();
+                try
+                {
+                    return DateTimeOffset.FromUnixTimeMilliseconds(ticks).DateTime;
+                }
+                catch
+                {
+                    return DateTime.MinValue;
+                }
+
+            default:
+                throw new JsonException($"Unexpected token type for DateTime: {reader.TokenType}");
+        }
+    }
+
+    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString("O"));
+    }
+}
+
+/// <summary>
+/// Custom nullable DateTime converter for D365 business events
+/// </summary>
+public class D365NullableDateTimeConverter : JsonConverter<DateTime?>
+{
+    public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        switch (reader.TokenType)
+        {
+            case JsonTokenType.String:
+                var stringValue = reader.GetString();
+                if (string.IsNullOrEmpty(stringValue))
+                {
+                    return null;
+                }
+
+                // Handle D365 /Date(ticks)/ format
+                if (stringValue.StartsWith("/Date(") && stringValue.EndsWith(")/"))
+                {
+                    var ticksString = stringValue.Substring(6, stringValue.Length - 8);
+                    if (long.TryParse(ticksString, out var milliseconds))
+                    {
+                        return DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).DateTime;
+                    }
+                }
+
+                if (DateTime.TryParse(stringValue, out var dateTime))
+                {
+                    return dateTime;
+                }
+                return null;
+
+            case JsonTokenType.Number:
+                var ticks = reader.GetInt64();
+                try
+                {
+                    return new DateTime(ticks, DateTimeKind.Utc);
+                }
+                catch
+                {
+                    try
+                    {
+                        return DateTimeOffset.FromUnixTimeSeconds(ticks).DateTime;
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+            default:
+                return null;
+        }
+    }
+
+    public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
+    {
+        if (value.HasValue)
+        {
+            writer.WriteStringValue(value.Value.ToString("O"));
+        }
+        else
+        {
+            writer.WriteNullValue();
+        }
+    }
+}
 
 /// <summary>
 /// D365 Business Event envelope
@@ -17,6 +149,7 @@ public class BusinessEventEnvelope
     public string? EventId { get; set; }
 
     [JsonPropertyName("EventTime")]
+    [JsonConverter(typeof(D365DateTimeConverter))]
     public DateTime EventTime { get; set; }
 
     [JsonPropertyName("MajorVersion")]
@@ -40,6 +173,13 @@ public class ProductionOrderReleasedEvent
     [JsonPropertyName("ProductionOrderNumber")]
     public string? ProductionOrderNumber { get; set; }
 
+    [JsonPropertyName("ProductionOrderReleaseDate")]
+    [JsonConverter(typeof(D365NullableDateTimeConverter))]
+    public DateTime? ProductionOrderReleaseDate { get; set; }
+
+    [JsonPropertyName("ProductionOrderType")]
+    public string? ProductionOrderType { get; set; }
+
     [JsonPropertyName("ItemNumber")]
     public string? ItemNumber { get; set; }
 
@@ -50,9 +190,11 @@ public class ProductionOrderReleasedEvent
     public string? ProductionWarehouseId { get; set; }
 
     [JsonPropertyName("ScheduledStartDate")]
+    [JsonConverter(typeof(D365NullableDateTimeConverter))]
     public DateTime? ScheduledStartDate { get; set; }
 
     [JsonPropertyName("ScheduledEndDate")]
+    [JsonConverter(typeof(D365NullableDateTimeConverter))]
     public DateTime? ScheduledEndDate { get; set; }
 
     [JsonPropertyName("ProductionOrderStatus")]

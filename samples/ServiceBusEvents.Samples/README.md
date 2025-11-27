@@ -210,7 +210,22 @@ Inspect DLQ messages with `--check-dlq` flag to:
 - Verify message schema matches expected format
 - Check for breaking changes in D365 event schema
 
-**Connection errors:**
-- Verify Service Bus namespace is accessible
-- Check firewall rules
-- Ensure connection string has correct permissions (Listen for receiver)
+**Connection errors (Connection reset by peer):**
+- **Network Restrictions**: Check if Service Bus namespace has network restrictions enabled
+  - In Azure Portal → Service Bus Namespace → Networking
+  - If "Selected networks" or "Private endpoint" is enabled, you may need VPN/ExpressRoute
+  - Try switching to "Public endpoint (all networks)" for testing
+- **Firewall/Proxy**: Ensure outbound TCP traffic is allowed on ports 5671 (AMQP over TLS) and 443 (WebSocket fallback)
+- **Connection String**: Verify connection string has "Listen" permission (SharedAccessKeyName should have receive rights)
+- **Namespace Status**: Check Service Bus namespace isn't disabled or in throttled state
+- **DNS Resolution**: Ensure `*.servicebus.windows.net` resolves correctly
+- **Retry**: Connection errors may be transient - the SDK will automatically retry
+
+**Test connectivity:**
+```bash
+# Test DNS resolution
+nslookup intl-go.servicebus.windows.net
+
+# Test port connectivity (if telnet is available)
+telnet intl-go.servicebus.windows.net 5671
+```
