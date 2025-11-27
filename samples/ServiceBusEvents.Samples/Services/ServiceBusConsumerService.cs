@@ -277,8 +277,6 @@ public class ServiceBusConsumerService
         {
             "ProductionOrderReleasedBusinessEvent" =>
                 JsonSerializer.Deserialize<ProductionOrderReleasedEvent>(businessEventJson),
-            "ProductionOrderStatusChangedBusinessEvent" =>
-                JsonSerializer.Deserialize<ProductionOrderStatusChangedEvent>(businessEventJson),
             _ => JsonSerializer.Deserialize<JsonElement>(businessEventJson)
         };
     }

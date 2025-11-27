@@ -66,42 +66,6 @@ public class ProductionOrderReleasedEvent
 }
 
 /// <summary>
-/// Production order status changed business event
-/// </summary>
-public class ProductionOrderStatusChangedEvent
-{
-    [JsonPropertyName("ProductionOrderNumber")]
-    public string? ProductionOrderNumber { get; set; }
-
-    [JsonPropertyName("ItemNumber")]
-    public string? ItemNumber { get; set; }
-
-    [JsonPropertyName("OldStatus")]
-    public string? OldStatus { get; set; }
-
-    [JsonPropertyName("NewStatus")]
-    public string? NewStatus { get; set; }
-
-    [JsonPropertyName("ProductionSiteId")]
-    public string? ProductionSiteId { get; set; }
-
-    [JsonPropertyName("ProductionWarehouseId")]
-    public string? ProductionWarehouseId { get; set; }
-
-    [JsonPropertyName("ChangedDateTime")]
-    public DateTime? ChangedDateTime { get; set; }
-
-    [JsonPropertyName("RemainingSchedulingQuantity")]
-    public decimal RemainingSchedulingQuantity { get; set; }
-
-    [JsonPropertyName("ScheduledStartDate")]
-    public DateTime? ScheduledStartDate { get; set; }
-
-    [JsonPropertyName("ScheduledEndDate")]
-    public DateTime? ScheduledEndDate { get; set; }
-}
-
-/// <summary>
 /// Service Bus configuration
 /// </summary>
 public class ServiceBusConfig

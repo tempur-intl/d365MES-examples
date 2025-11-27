@@ -70,12 +70,9 @@ D365 publishes business events to Azure Service Bus when important actions occur
    - **Filter type**: **SQL filter**
    - **SQL filter expression**:
      ```sql
-     EventId IN ('ProductionOrderReleasedBusinessEvent', 'ProductionOrderStatusChangedBusinessEvent')
-     AND LegalEntity = '500'
+     EventId = 'ProductionOrderReleasedBusinessEvent' AND LegalEntity = '500'
      ```
-   - Click **Create**
-
-This filter ensures your MES only receives production order events for legal entity 500.
+   - Click **Create**This filter ensures your MES only receives production order events for legal entity 500.
 
 ## D365 Business Events Setup
 
@@ -95,7 +92,6 @@ This filter ensures your MES only receives production order events for legal ent
 1. Go to **System administration > Setup > Business events > Business events catalog**
 2. Search for and activate:
    - `ProductionOrderReleasedBusinessEvent`
-   - `ProductionOrderStatusChangedBusinessEvent`
 3. Go to **System administration > Setup > Business events > Business events**
 4. For each activated event:
    - Select the event
@@ -104,7 +100,7 @@ This filter ensures your MES only receives production order events for legal ent
    - Set **Legal entity** filter if needed (optional, since your subscription already filters)
 5. Click **Activate**
 
-Events will now be published to your Service Bus topic when production orders are released or change status.
+Events will now be published to your Service Bus topic when production orders are released.
 
 ## Usage
 
@@ -166,24 +162,6 @@ Published when a production order is released to the shop floor:
   "DeliveryCount": 1,
   "EnqueuedTime": "2025-11-26T10:30:01Z",
   "Success": true
-}
-```
-
-### Production Order Status Changed Event
-
-Published when a production order changes status:
-
-```json
-{
-  "EventId": "ProductionOrderStatusChangedBusinessEvent",
-  "EventData": {
-    "ProductionOrderNumber": "P000001234",
-    "ItemNumber": "83107273",
-    "OldStatus": "Released",
-    "NewStatus": "Started",
-    "ProductionSiteId": "01",
-    "ChangedDateTime": "2025-11-26T10:45:00Z"
-  }
 }
 ```
 
