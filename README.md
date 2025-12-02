@@ -12,10 +12,11 @@ D365IntegrationSamples/
 │       ├── IvaTokenProvider.cs
 │       └── D365TokenProvider.cs
 ├── samples/
-│   ├── InventoryVisibility.Samples/  # Inventory Visibility Add-in examples
-│   ├── MesIntegration.Samples/       # MES Integration API examples
-│   ├── OData.Samples/                # OData endpoint examples
-│   └── ServiceBusEvents.Samples/     # Azure Service Bus event consumer
+│   ├── InventoryVisibility.Samples/     # Inventory Visibility Add-in examples
+│   ├── MesIntegration.Samples/          # MES Integration API examples
+│   ├── OData.Samples/                   # OData endpoint examples
+│   ├── ServiceBusEvents.Samples/        # Azure Service Bus event consumer
+│   └── IntegratedEventDriven.Samples/   # Combined Service Bus + OData
 └── README.md
 ```
 
@@ -64,6 +65,14 @@ Azure Service Bus event consumer for D365 business events:
 - ✅ Poll once mode (testing) or continuous listening (production)
 - ✅ Dead letter queue inspection
 - ✅ Automatic retry with DLQ handling
+
+### 6. **IntegratedEventDriven.Samples**
+Combined Service Bus + OData integration:
+- ✅ Receive ProductionOrderReleasedBusinessEvent
+- ✅ Extract ProductionOrderNumber from event
+- ✅ Query OData with filtered request for specific order
+- ✅ Retrieve BOM lines and related data
+- ✅ Demonstrates complete event-driven workflow
 
 ## 🚀 Getting Started
 
@@ -124,6 +133,10 @@ dotnet run -- --continuous
 
 # Check dead letter queue
 dotnet run -- --check-dlq
+
+# Run integrated event-driven sample
+cd samples/IntegratedEventDriven.Samples
+DOTNET_ENVIRONMENT=Development dotnet run
 ```
 
 ## 📚 Documentation
@@ -143,6 +156,7 @@ These samples demonstrate common scenarios for memory foam bed manufacturing:
 4. **Production Order Management** - Start, track, and complete production orders
 5. **Reference Data Queries** - Retrieve production orders, BOMs, and routing information
 6. **Event-Driven Integration** - React to D365 production order events via Service Bus
+7. **Filtered OData Queries** - Query specific records efficiently using OData filters with event data
 
 ## 🛠️ Best Practices
 
