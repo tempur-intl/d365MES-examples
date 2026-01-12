@@ -23,7 +23,11 @@ public class ServiceBusConsumerService
         _logger = logger;
 
         // Create Service Bus client
-        _client = new ServiceBusClient(_config.ConnectionString);
+        var options = new ServiceBusClientOptions
+        {
+            TransportType = ServiceBusTransportType.AmqpWebSockets
+        };
+        _client = new ServiceBusClient(_config.ConnectionString, options);
 
         // Create receiver based on entity type
         if (_config.EntityType.Equals("Topic", StringComparison.OrdinalIgnoreCase))
