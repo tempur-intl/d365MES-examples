@@ -64,6 +64,21 @@
 - **Join Condition**: `TSILogoSetup.TSILogoId == TSILogoSetupCounty.TSILogoId`
 - Country filter records (optional)
 
+### 12. EcoResProduct
+- **Join Type**: Left Outer Join
+- **Join Condition**: `InventTable.Product == EcoResProduct.RecId`
+- Product master record (for attribute lookups)
+
+### 13. EcoResAttribute
+- **Join Type**: Left Outer Join
+- **Join Condition**: `EcoResAttribute.Name == TSILogoSetup.TSILogoId`
+- Attribute definitions (to check if logo ID matches an attribute name)
+
+### 14. EcoResProductAttributeValue
+- **Join Type**: Left Outer Join
+- **Join Condition**: `EcoResProduct.RecId == EcoResProductAttributeValue.Product AND EcoResAttribute.RecId == EcoResProductAttributeValue.Attribute`
+- Product attribute values (to check if boolean attribute is true)
+
 ## Field Mappings
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
@@ -142,38 +157,47 @@ AND (
 - If TSILogoSetupCounty records exist, the sales order destination country must match
 - Destination country comes from `LogisticsPostalAddress.CountryRegionId` via SalesTable
 
-### Filter 4: Item Attribute Filter
+### Filter 4: Item Attribute Filter (Specific Logos Only)
 
-Some logos require specific boolean item attributes to be true.
+Some logos require specific boolean **product attributes** to be set to Yes. This filter **only affects logos whose ID matches a product attribute name**.
 
 **Examples:**
-- Logo ID `UDI` requires item attribute `UDI` = true
-- Logo ID `CEMD` requires item attribute `CEMD` = true
+- Logo ID `UDI` requires product attribute `UDI` = NoYes::Yes
+- Logo ID `CEMD` requires product attribute `CE-Mark` = NoYes::Yes
+- Logo ID `Triman` does NOT match any attribute → no attribute check (logo applies normally)
 
 **Implementation Approach:**
 ```xpp
-// Check if logo ID matches an item attribute name
-// If it does, verify the attribute value is true for this item
-
-WHERE (
-    // Logo doesn't require attribute check
-    [LogoIdNotAnAttributeName]
+AND (
+    // Logo ID doesn't match any attribute name (no attribute check needed)
+    // This applies to most logos like Triman, Japan Recycle, etc.
+    NOT EXISTS (
+        SELECT 1 FROM EcoResAttribute
+        WHERE EcoResAttribute.Name == TSILogoSetup.TSILogoId
+    )
 
     OR
 
-    // Logo requires attribute and attribute is true
-    (
-        [LogoIdMatchesAttributeName]
-        AND [ItemAttributeValueIsTrue]
+    // Logo ID matches attribute name (e.g., UDI, CEMD)
+    // AND attribute value is true for this product
+    EXISTS (
+        SELECT 1
+        FROM EcoResAttribute
+        INNER JOIN EcoResProductAttributeValue ON EcoResAttribute.RecId == EcoResProductAttributeValue.Attribute
+        WHERE EcoResAttribute.Name == TSILogoSetup.TSILogoId
+          AND EcoResProductAttributeValue.Product == EcoResProduct.RecId
+          AND EcoResProductAttributeValue.Value == 1  // NoYes::Yes (boolean product attribute)
     )
 )
 ```
 
-**Item Attribute Lookup:**
-- Table: `EcoResProductAttributeValue`
-- Join through: `EcoResProduct` → `EcoResProductAttributeValue`
-- Filter by attribute name (matching logo ID)
-- Check boolean value = true
+**Implementation Notes:**
+- Check if `TSILogoSetup.TSILogoId` matches a product attribute name in `EcoResAttribute.Name`
+- If no match, logo applies (no attribute restriction) - **this is the case for most logos**
+- If match exists (e.g., logo ID is "UDI" or "CEMD"), verify the product attribute value is NoYes::Yes (1) for the product
+- Only logos with IDs matching product attribute names (like UDI, CEMD) are subject to this filter
+- Boolean product attributes store 1 for NoYes::Yes, 0 for NoYes::No
+- Requires joins to EcoResProduct (data source #12), EcoResAttribute (#13), and EcoResProductAttributeValue (#14)
 
 ### Result Ordering
 
