@@ -84,14 +84,21 @@
 - **Relationship**: One job can have multiple label records (due to UDI units)
 - **Foreign Key**: `RecId`
 - **Navigation Name**: `Label`
-- **Usage**: Use `$expand=Label($expand=Logos)` to retrieve label data and logos in a single call
+- **Usage**: Use `$expand=Label` to retrieve label data with job data
 
-**Example - Single Call for Complete Job Data:**
-```
-GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label($expand=Logos($orderby=TSILogoPosition))
-```
+**IMPORTANT**: D365 Finance & Operations only supports **first-level $expand**. Nested expansion like `$expand=Label($expand=Logos)` is NOT supported.
 
-**Note**: This enables the MES system to retrieve job data, label printing information, and logo files in a single OData call.
+**Option 1 - Get Job Data with Labels (First-Level Expansion):**
+```
+GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label
+```
+Returns job data with label records expanded (no logos).
+
+**Option 2 - Query TSI_LabelEntity Directly (Recommended for MES Label Printing):**
+```
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Logos
+```
+Single call retrieves all label data with logos expanded. This is the recommended approach for MES when label printing data is needed.
 
 See [TSI_LabelEntity.md](TSI_LabelEntity.md) for label field details and [TSI_LabelLogoEntity.md](TSI_LabelLogoEntity.md) for logo filtering logic.
 
@@ -180,12 +187,17 @@ GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and EmplId eq 'EMP001'
 GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and ItemId eq 'ITEM123'
 ```
 
-### Example Query - Single Call with Label and Logo Data (Recommended for MES)
+### Example Query - Get Job with Labels (First-Level Expansion)
 ```
-GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label($expand=Logos($orderby=TSILogoPosition))
+GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label
 ```
 
-**Response Structure:**
+### Example Query - Get Labels with Logos (Recommended for MES)
+```
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Logos
+```
+
+**Response Structure (Job with Labels - First Level):**
 ```json
 {
   "RecId": 123456,
@@ -195,6 +207,23 @@ GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expa
   "ItemName": "Pillow Product",
   "dataAreaId": "500",
   "Label": [
+    {
+      "RecId": 123456,
+      "ProdId": "PROD-001234",
+      "JobId": "JOB-12345",
+      "LabelAddress": "123 Main St",
+      "LabelSalesOrder": "SO-001234",
+      "UDI": "(01)12345678901234(21)PROD-001",
+      "UDIUnit": "x1"
+    }
+  ]
+}
+```
+
+**Response Structure (Labels with Logos - Recommended):**
+```json
+{
+  "value": [
     {
       "RecId": 123456,
       "ProdId": "PROD-001234",
@@ -319,6 +348,6 @@ WHERE jtr.JobActive = 1
 - This is a read-only entity for querying active jobs
 - Performance is critical - ensure indexes are in place
 - Entity is optimized for fast, frequent access
-- **MES Integration**: Use `$expand=Label($expand=Logos)` for single-call retrieval of job, label, and logo data
+- **MES Integration**: D365 only supports first-level $expand. Query TSI_LabelEntity directly with `$expand=Logos` for label + logo data in one call
 - Label data includes multiple rows per job when multiple UDI units exist
-- Navigation properties enable complete data retrieval without multiple API calls
+- Navigation properties enable one-level expansion only

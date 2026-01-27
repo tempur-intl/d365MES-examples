@@ -277,9 +277,11 @@ ORDER BY TSILogoSetup.TSILogoPosition, TSILogoSetup.TSILogoId
 - **Navigation Name**: `Label` (from logo to parent label)
 - **Inverse Navigation**: `Logos` (from label to logos)
 
-**Complete Navigation Chain:**
-- TSI_JmgJobEntity → `Label` → TSI_LabelEntity → `Logos` → TSI_LabelLogoEntity
-- Single-call pattern: `GET /data/TSI_JmgJobs?$filter=JobId eq 'JOB-12345'&$expand=Label($expand=Logos)`
+**Navigation Chain (First-Level Expansion Only):**
+- TSI_JmgJobEntity → `Label` → TSI_LabelEntity (first level)
+- TSI_LabelEntity → `Logos` → TSI_LabelLogoEntity (first level)
+- **D365 Limitation**: Only first-level $expand supported - nested expansion NOT supported
+- **Recommended**: Query TSI_LabelEntity directly: `GET /data/TSI_Labels?$filter=JobId eq 'JOB-12345'&$expand=Logos`
 
 ## Security
 
@@ -496,8 +498,8 @@ ORDER BY ls.TSILogoPosition;
 
 - This entity returns **multiple rows per job** (one per applicable logo)
 - Logos are filtered based on product family, destination country, and item attributes
-- **MES Integration**: Use nested `$expand=Label($expand=Logos)` from TSI_JmgJobEntity for single-call operation
-- Alternative: Query TSI_LabelEntity directly with `$expand=Logos`
+- **MES Integration**: D365 only supports first-level $expand. Query TSI_LabelEntity directly with `$expand=Logos` to get labels and logos together
+- **Important**: Nested expansion like `$expand=Label($expand=Logos)` is NOT supported in D365 Finance & Operations
 - Logo positions (1-10) determine display order on the label
 - If no logos match the filters, no rows are returned for that job
 - Logo setup tables are cached for performance

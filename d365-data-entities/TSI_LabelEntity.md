@@ -122,12 +122,12 @@ See [TSI_LabelLogoEntity.md](TSI_LabelLogoEntity.md) for logo filtering logic an
 - **Navigation Name**: `Job`
 - **Inverse Navigation**: `Label` (from job to labels)
 
-**Single-Call Pattern (Recommended for MES):**
+**Recommended Pattern for MES (Label + Logos in One Call):**
 ```
-GET /data/TSI_JmgJobs?$filter=JobId eq 'JOB-12345'&$expand=Label($expand=Logos($orderby=TSILogoPosition))
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Logos
 ```
 
-This enables retrieval of job data, label information, and logos in a single API call.
+**Note**: D365 Finance & Operations only supports **first-level $expand**. Nested expansion like `$expand=Label($expand=Logos)` is NOT supported. Query this entity directly with `$expand=Logos` to get label data and logos together.
 
 ### Required Query Parameters
 
