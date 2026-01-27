@@ -65,11 +65,11 @@
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | Yes | Item description (translated) |
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias name |
 | `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | Yes | Item group |
-| `ItemLength` | Real | `InventTable` | `Depth` | No | Item length/depth |
-| `ItemWidth` | Real | `InventTable` | `Width` | No | Item width |
-| `ItemMaxHeight` | Real | `InventTable` | `Height` | No | Item height |
-| `ShorteningLength` | Real | `TSIInventTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
-| `BlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | No | Block width (custom field) |
+| `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
+| `Width` | Real | `InventTable` | `Width` | No | Item width |
+| `Height` | Real | `InventTable` | `Height` | No | Item height |
+| `TSIShorteningLength` | Real | `TSIInventTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
+| `TSIBlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | No | Block width (custom field) |
 | `InventLocationId` | String (10) | `InventDim` | `InventLocationId` | Yes | Warehouse |
 | `WMSLocationId` | String (20) | `InventDim` | `WMSLocationId` | No | WMS location |
 | `InventDimId` | String (20) | `ProdBOM` | `InventDimId` | Yes | Dimension ID |
@@ -176,11 +176,11 @@ export interface TSI_ProdBomLine {
   ItemName: string;
   NameAlias: string;
   ItemGroupId: string;
-  ItemLength: number;
-  ItemWidth: number;
-  ItemMaxHeight: number;
-  ShorteningLength: number;
-  BlockWidth: number;
+  Depth: number;
+  Width: number;
+  Height: number;
+  TSIShorteningLength: number;
+  TSIBlockWidth: number;
   InventLocationId: string;
   WMSLocationId: string;
   InventDimId: string;
@@ -221,9 +221,9 @@ SELECT
     pt.NAME AS ITEMNAME,
     it.NAMEALIAS,
     iig.ITEMGROUPID,
-    it.DEPTH AS ITEMLENGTH,
-    it.WIDTH AS ITEMWIDTH,
-    it.HEIGHT AS ITEMMAXHEIGHT,
+    it.DEPTH,
+    it.WIDTH,
+    it.HEIGHT,
     tsi.TSISHORTENINGLENGTH,
     tsi.TSIBLOCKWIDTH,
     id.INVENTLOCATIONID,

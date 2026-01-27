@@ -61,20 +61,20 @@
 | `StartItems` | Real | `JmgTermReg` | `StartItems` | Yes | Start quantity |
 | `RegDateTime` | DateTime | `JmgTermReg` | `RegDateTime` | Yes | Registration timestamp |
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | Yes | Item name |
-| `ItemNameAlias` | String (60) | `InventTable` | `NameAlias` | Yes | Item alias |
-| `DlvDateProd` | Date | `ProdTable` | `DlvDate` | Yes | Production delivery date |
+| `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias |
+| `DlvDateProd` | Date | `ProdTable` | `DlvDate` | No | Production delivery date |
 | `OprNum` | String (10) | `JmgJobTable` | `OprNum` | Yes | Operation number |
-| `InventBatchId` | String (20) | `InventDim` | `InventBatchId` | Yes | Batch identifier |
-| `Height` | Real | `InventTable` | `Height` | Yes | Item height |
-| `Width` | Real | `InventTable` | `Width` | Yes | Item width |
-| `Depth` | Real | `InventTable` | `Depth` | Yes | Item depth/length |
-| `BlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | Yes | Block width (custom field) |
-| `ProdPrioText` | String (10) | `ProdTable` | `ProdPrio` | Yes | Production priority |
-| `TSIPuljeID` | Integer | `ProdTable` | `TSIPuljeID` | Yes | Pulje ID (custom field) |
-| `GreenHandNote` | String | `JmgJobTable` | `GreenHandNote` | Yes | Green hand note (custom field) |
-| `ItemNameConsumption` | String | `JmgJobTable` | `ItemNameConsumption` | Yes | Consumption text (custom field) |
-| `StandardPalletQuantity` | Real | `UnitSeqGroupLine` | `Qty` | Yes | Standard pallet quantity (from unit sequence group line 3) |
-| `InventShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | Yes | Shortening length (custom field) |
+| `InventBatchId` | String (20) | `InventDim` | `InventBatchId` | No | Batch identifier |
+| `Height` | Real | `InventTable` | `Height` | No | Item height |
+| `Width` | Real | `InventTable` | `Width` | No | Item width |
+| `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
+| `BlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | No | Block width (custom field) |
+| `ProdPrioText` | String (10) | `ProdTable` | `ProdPrio` | No | Production priority |
+| `TSIPuljeID` | Integer | `ProdTable` | `TSIPuljeID` | No | Pulje ID (custom field) |
+| `GreenHandNote` | String | `JmgJobTable` | `GreenHandNote` | No | Green hand note (custom field) |
+| `ItemNameConsumption` | String | `JmgJobTable` | `ItemNameConsumption` | No | Consumption text (custom field) |
+| `StandardPalletQuantity` | Real | `UnitSeqGroupLine` | `Qty` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
+| `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
 
 ## Navigation Properties
@@ -232,7 +232,7 @@ export interface TSI_JmgJob {
   StartItems: number;
   RegDateTime: string;
   ItemName: string;
-  ItemNameAlias?: string;
+  NameAlias?: string;
   DlvDateProd?: string;
   OprNum: string;
   InventBatchId?: string;
@@ -245,7 +245,7 @@ export interface TSI_JmgJob {
   GreenHandNote?: string;
   ItemNameConsumption?: string;
   StandardPalletQuantity?: number;
-  InventShorteningLength?: number;
+  TSIShorteningLength?: number;
   dataAreaId: string;
   Label?: TSI_Label[]; // Navigation property (use $expand=Label)
 }
