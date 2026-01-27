@@ -10,7 +10,6 @@
 
 ### 1. JmgTermReg (Primary Data Source)
 - **Join Type**: Primary
-- **Filter**: `JobActive = 1`
 - Job terminal registration records
 
 ### 2. JmgJobTable
@@ -116,12 +115,77 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$ex
 
 See [TSI_LabelLogoEntity.md](TSI_LabelLogoEntity.md) for logo filtering logic and implementation details.
 
-## Query Filters
+### Job (Many-to-One)
+- **Related Entity**: `TSI_JmgJobEntity`
+- **Relationship**: Multiple label records (per UDI unit) belong to one job
+- **Foreign Key**: `RecId`
+- **Navigation Name**: `Job`
+- **Inverse Navigation**: `Label` (from job to labels)
 
-### Range on Primary Data Source
+**Single-Call Pattern (Recommended for MES):**
+```
+GET /data/TSI_JmgJobs?$filter=JobId eq 'JOB-12345'&$expand=Label($expand=Logos($orderby=TSILogoPosition))
+```
+
+This enables retrieval of job data, label information, and logos in a single API call.
+
+### Required Query Parameters
+
+**IMPORTANT**: This entity MUST be called with either `JobId` or `ProdId` filter to prevent full table scans.
+
+**Enforcement**: Implement validation in the entity's `validateRead()` method:
+
 ```xpp
-// On JmgTermReg data source
-JobActive == 1
+public boolean validateRead()
+{
+    boolean ret;
+    QueryBuildDataSource qbds;
+    QueryBuildRange qbr;
+    boolean hasJobIdFilter = false;
+    boolean hasProdIdFilter = false;
+
+    ret = super();
+
+    if (ret)
+    {
+        // Check for JobId or ProdId filter
+        qbds = this.query().dataSourceTable(tableNum(JmgTermReg));
+
+        // Check JobId filter
+        qbr = qbds.findRange(fieldNum(JmgJobTable, JobId));
+        if (qbr && qbr.value())
+        {
+            hasJobIdFilter = true;
+        }
+
+        // Check ProdId filter
+        qbr = qbds.findRange(fieldNum(ProdTable, ProdId));
+        if (qbr && qbr.value())
+        {
+            hasProdIdFilter = true;
+        }
+
+        if (!hasJobIdFilter && !hasProdIdFilter)
+        {
+            error("TSI_LabelEntity must be filtered by JobId or ProdId.");
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+```
+
+**OData Impact**: Queries without JobId or ProdId filter will return an error:
+```
+GET /data/TSI_Labels?$filter=dataAreaId eq '500'
+// Returns error: "TSI_LabelEntity must be filtered by JobId or ProdId."
+```
+
+**Valid Queries**:
+```
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
 ```
 
 ## Barcode Logic (LabelEAN_Code)
@@ -314,8 +378,9 @@ export interface TSI_LabelLogo {
 - [ ] Implement barcode lookup logic (computed field or method)
 - [ ] Implement DateWeek computation from SalesLine.ConfirmedDlv (computed field or method)
 - [ ] Create navigation property relationship to TSI_LabelLogoEntity (Logos)
+- [ ] Create navigation property relationship to TSI_JmgJobEntity (Job - inverse of Label)
 - [ ] Map all fields from source tables
-- [ ] Add query range filter (JobActive = 1)
+- [ ] Implement validateRead() method to enforce JobId or ProdId filter
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Build and synchronize
 - [ ] Grant security privileges
@@ -350,8 +415,7 @@ LEFT JOIN TSIUDI udi ON pt.ProdId = udi.ReferenceNumber
   AND udi.ReferenceType = 0  -- TSIReferenceType::ProductionOrder
   AND pt.ItemId = udi.ItemId
   AND id.ConfigId = udi.ConfigId
-WHERE jtr.JobActive = 1
-  AND jtr.DataAreaId = '500'
+WHERE jtr.DataAreaId = '500'
   AND st.SalesId IS NOT NULL
 ```
 
@@ -374,7 +438,8 @@ ORDER BY
 - This is a read-only entity for querying label data
 - Many fields are optional (Left Outer Joins) as not all jobs have sales orders
 - Entity is designed for label printing scenarios only
-- Use TSI_JmgJobEntity for frequent job status checks
+- **MES Integration**: Prefer calling TSI_JmgJobEntity with `$expand=Label($expand=Logos)` for single-call retrieval
+- Can be queried directly with JobId or ProdId filter (required)
 - Barcode lookup logic requires computed field implementation
 - Logo files are retrieved via `$expand=Logos` navigation property (see TSI_LabelLogoEntity)
 - Performance: Only query when printing labels, not for every job check

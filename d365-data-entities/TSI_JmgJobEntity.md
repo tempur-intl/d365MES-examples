@@ -77,6 +77,24 @@
 | `InventShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | Yes | Shortening length (custom field) |
 | `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
 
+## Navigation Properties
+
+### Label (One-to-Many)
+- **Related Entity**: `TSI_LabelEntity`
+- **Relationship**: One job can have multiple label records (due to UDI units)
+- **Foreign Key**: `RecId`
+- **Navigation Name**: `Label`
+- **Usage**: Use `$expand=Label($expand=Logos)` to retrieve label data and logos in a single call
+
+**Example - Single Call for Complete Job Data:**
+```
+GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label($expand=Logos($orderby=TSILogoPosition))
+```
+
+**Note**: This enables the MES system to retrieve job data, label printing information, and logo files in a single OData call.
+
+See [TSI_LabelEntity.md](TSI_LabelEntity.md) for label field details and [TSI_LabelLogoEntity.md](TSI_LabelLogoEntity.md) for logo filtering logic.
+
 ## Query Filters
 
 ### Range on Primary Data Source
@@ -162,6 +180,46 @@ GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and EmplId eq 'EMP001'
 GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and ItemId eq 'ITEM123'
 ```
 
+### Example Query - Single Call with Label and Logo Data (Recommended for MES)
+```
+GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label($expand=Logos($orderby=TSILogoPosition))
+```
+
+**Response Structure:**
+```json
+{
+  "RecId": 123456,
+  "JobId": "JOB-12345",
+  "ItemId": "ITEM123",
+  "EmplId": "EMP001",
+  "ItemName": "Pillow Product",
+  "dataAreaId": "500",
+  "Label": [
+    {
+      "RecId": 123456,
+      "ProdId": "PROD-001234",
+      "JobId": "JOB-12345",
+      "LabelAddress": "123 Main St",
+      "LabelSalesOrder": "SO-001234",
+      "UDI": "(01)12345678901234(21)PROD-001",
+      "UDIUnit": "x1",
+      "Logos": [
+        {
+          "TSILogoId": "CEMD",
+          "TSILogoPath": "\\\\server\\logos\\cemd.png",
+          "TSILogoPosition": 1
+        },
+        {
+          "TSILogoId": "Triman",
+          "TSILogoPath": "\\\\server\\logos\\triman.png",
+          "TSILogoPosition": 2
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## TypeScript Interface
 
 ```typescript
@@ -189,6 +247,27 @@ export interface TSI_JmgJob {
   StandardPalletQuantity?: number;
   InventShorteningLength?: number;
   dataAreaId: string;
+  Label?: TSI_Label[]; // Navigation property (use $expand=Label)
+}
+
+// Import from TSI_LabelEntity
+export interface TSI_Label {
+  RecId: number;
+  ProdId: string;
+  JobId: string;
+  LabelAddress?: string;
+  LabelSalesOrder?: string;
+  UDI?: string;
+  UDIUnit?: string;
+  // ... other label fields
+  Logos?: TSI_LabelLogo[];
+}
+
+export interface TSI_LabelLogo {
+  TSILogoId: string;
+  TSILogoPath: string;
+  TSILogoPosition: number;
+  TSILogIdDescr?: string;
 }
 ```
 
@@ -200,6 +279,7 @@ export interface TSI_JmgJob {
 - [ ] Configure join conditions
 - [ ] Add query range filter (JobActive = 1)
 - [ ] Map all fields from source tables
+- [ ] Create navigation property relationship to TSI_LabelEntity (Label)
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Build and synchronize
 - [ ] Grant security privileges
@@ -239,4 +319,6 @@ WHERE jtr.JobActive = 1
 - This is a read-only entity for querying active jobs
 - Performance is critical - ensure indexes are in place
 - Entity is optimized for fast, frequent access
-- For label printing data, use separate TSI_JmgJobLabelEntity
+- **MES Integration**: Use `$expand=Label($expand=Logos)` for single-call retrieval of job, label, and logo data
+- Label data includes multiple rows per job when multiple UDI units exist
+- Navigation properties enable complete data retrieval without multiple API calls

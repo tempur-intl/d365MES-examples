@@ -11,7 +11,6 @@
 
 ### 1. JmgTermReg (Primary Data Source)
 - **Join Type**: Primary
-- **Filter**: `JobActive = 1`
 - Job terminal registration records
 
 ### 2. JmgJobTable
@@ -91,6 +90,62 @@
 | `TSILogoPosition` | Integer | `TSILogoSetup` | `TSILogoPosition` | Yes | Display position on label (1-10) |
 | `TSILogIdDescr` | String | `TSILogoSetup` | `TSILogIdDescr` | No | Logo description |
 | `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
+
+## Required Query Parameters
+
+**IMPORTANT**: This entity MUST be called with either `JobId` or `ProdId` filter to prevent full table scans.
+
+**Note**: When accessed via `$expand=Logos` from TSI_LabelEntity, this validation is automatically satisfied by the parent entity's filters.
+
+**Enforcement**: Implement validation in the entity's `validateRead()` method:
+
+```xpp
+public boolean validateRead()
+{
+    boolean ret;
+    QueryBuildDataSource qbds;
+    QueryBuildRange qbr;
+    boolean hasJobIdFilter = false;
+    boolean hasProdIdFilter = false;
+
+    ret = super();
+
+    if (ret)
+    {
+        // Check for JobId or ProdId filter
+        qbds = this.query().dataSourceTable(tableNum(JmgTermReg));
+
+        // Check JobId filter
+        qbr = qbds.findRange(fieldNum(JmgJobTable, JobId));
+        if (qbr && qbr.value())
+        {
+            hasJobIdFilter = true;
+        }
+
+        // Check ProdId filter
+        qbr = qbds.findRange(fieldNum(ProdTable, ProdId));
+        if (qbr && qbr.value())
+        {
+            hasProdIdFilter = true;
+        }
+
+        if (!hasJobIdFilter && !hasProdIdFilter)
+        {
+            error("TSI_LabelLogoEntity must be filtered by JobId or ProdId.");
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+```
+
+**Valid Queries**:
+```
+GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'
+GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
+GET /data/TSI_Labels?$filter=JobId eq 'JOB-12345'&$expand=Logos  // Automatic
+```
 
 ## Logo Filtering Logic
 
@@ -221,6 +276,10 @@ ORDER BY TSILogoSetup.TSILogoPosition, TSILogoSetup.TSILogoId
 - **Foreign Key**: RecId
 - **Navigation Name**: `Label` (from logo to parent label)
 - **Inverse Navigation**: `Logos` (from label to logos)
+
+**Complete Navigation Chain:**
+- TSI_JmgJobEntity → `Label` → TSI_LabelEntity → `Logos` → TSI_LabelLogoEntity
+- Single-call pattern: `GET /data/TSI_JmgJobs?$filter=JobId eq 'JOB-12345'&$expand=Label($expand=Logos)`
 
 ## Security
 
@@ -371,7 +430,7 @@ export interface TSI_LabelWithLogos extends TSI_Label {
 - [ ] Implement Filter 4: Item attribute filter logic (boolean attributes)
 - [ ] Retrieve product family dimension (F_Family) from item
 - [ ] Map all fields from source tables
-- [ ] Add query range filter (JobActive = 1)
+- [ ] Implement validateRead() method to enforce JobId or ProdId filter
 - [ ] Configure ordering by TSILogoPosition
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Create navigation property relationship to TSI_LabelEntity
@@ -427,8 +486,7 @@ LEFT JOIN SalesLine sl ON pt.ProdId = sl.InventRefId
 LEFT JOIN SalesTable st ON sl.SalesId = st.SalesId
 LEFT JOIN LogisticsPostalAddress lpa ON st.DeliveryPostalAddress = lpa.RecId
 CROSS JOIN TSILogoSetup ls
-WHERE jtr.JobActive = 1
-  AND pt.ProdId = 'PROD-001234' -- Specific production order
+WHERE pt.ProdId = 'PROD-001234' -- Specific production order
   AND ls.TSILogoActive = 1
   -- Add family and country filter logic here
 ORDER BY ls.TSILogoPosition;
@@ -438,7 +496,8 @@ ORDER BY ls.TSILogoPosition;
 
 - This entity returns **multiple rows per job** (one per applicable logo)
 - Logos are filtered based on product family, destination country, and item attributes
-- MES should use `$expand=Logos` when querying TSI_LabelEntity for single-call operation
+- **MES Integration**: Use nested `$expand=Label($expand=Logos)` from TSI_JmgJobEntity for single-call operation
+- Alternative: Query TSI_LabelEntity directly with `$expand=Logos`
 - Logo positions (1-10) determine display order on the label
 - If no logos match the filters, no rows are returned for that job
 - Logo setup tables are cached for performance
