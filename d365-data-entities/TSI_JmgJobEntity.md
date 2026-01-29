@@ -54,6 +54,7 @@
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
 | `RecId` | Int64 | `JmgTermReg` | `RecId` | Yes | Primary key |
+| `ProdId` | String (20) | `ProdTable` | `ProdId` | Yes | Production order ID |
 | `ModuleRefId` | String (20) | `JmgJobTable` | `ModuleRefId` | Yes | Production order reference |
 | `ItemId` | String (20) | `JmgJobTable` | `ItemId` | Yes | Item identifier |
 | `JobId` | String (20) | `JmgTermReg` | `JobId` | Yes | Job identifier |
@@ -187,6 +188,11 @@ GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and EmplId eq 'EMP001'
 GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and ItemId eq 'ITEM123'
 ```
 
+### Example Query - Jobs for Specific Production Order
+```
+GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
+```
+
 ### Example Query - Get Job with Labels (First-Level Expansion)
 ```
 GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label
@@ -254,6 +260,7 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expan
 ```typescript
 export interface TSI_JmgJob {
   RecId: number;
+  ProdId: string;
   ModuleRefId: string;
   ItemId: string;
   JobId: string;
