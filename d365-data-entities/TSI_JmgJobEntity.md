@@ -74,7 +74,7 @@
 | `TSIPuljeID` | Integer | `ProdTable` | `TSIPuljeID` | No | Pulje ID (custom field) |
 | `GreenHandNote` | String | `JmgJobTable` | `GreenHandNote` | No | Green hand note (custom field) |
 | `ItemNameConsumption` | String | `JmgJobTable` | `ItemNameConsumption` | No | Consumption text (custom field) |
-| `StandardPalletQuantity` | Real | `WHSUOMSeqGroupLine` | `Qty` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
+| `StandardPalletQuantity` | Real | `WHSUOMSeqGroupLine` | `UnitId` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
 | `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
 
