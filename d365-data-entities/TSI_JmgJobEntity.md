@@ -43,10 +43,10 @@
 - **Join Condition**: `InventTable.Product == EcoResProductTranslation.Product`
 - Product translations for item names
 
-### 8. UnitSeqGroupLine
+### 8. WHSUOMSeqGroupLine
 - **Join Type**: Left Outer Join
-- **Join Condition**: `InventTable.UnitSeqGroupId == UnitSeqGroupLine.UnitSeqGroupId`
-- **Filter**: `UnitSeqGroupLine.LineNum == 3`
+- **Join Condition**: `InventTable.UOMSeqGroupId == WHSUOMSeqGroupLine.UOMSeqGroupId`
+- **Filter**: `WHSUOMSeqGroupLine.LineNum == 3`
 - Unit sequence group for pallet quantities (always Line 3)
 
 ## Field Mappings
@@ -74,7 +74,7 @@
 | `TSIPuljeID` | Integer | `ProdTable` | `TSIPuljeID` | No | Pulje ID (custom field) |
 | `GreenHandNote` | String | `JmgJobTable` | `GreenHandNote` | No | Green hand note (custom field) |
 | `ItemNameConsumption` | String | `JmgJobTable` | `ItemNameConsumption` | No | Consumption text (custom field) |
-| `StandardPalletQuantity` | Real | `UnitSeqGroupLine` | `Qty` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
+| `StandardPalletQuantity` | Real | `WHSUOMSeqGroupLine` | `Qty` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
 | `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
 
@@ -129,7 +129,7 @@ The following fields are custom extensions and must be verified to exist in your
 - `GreenHandNote`
 
 ### Unit Sequence Group Configuration
-- **StandardPalletQuantity** is retrieved from `UnitSeqGroupLine` where `LineNum == 3`
+- **StandardPalletQuantity** is retrieved from `WHSUOMSeqGroupLine` where `LineNum == 3`
 - Ensure items have unit sequence groups configured with Line 3 for pallet quantities
 - This replaces the deprecated `InventTable.StandardPalletQuantity` field
 
