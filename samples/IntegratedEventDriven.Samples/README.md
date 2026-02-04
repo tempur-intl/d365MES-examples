@@ -116,7 +116,7 @@ Production Order Details:
     • 19503: 24 p1
     • 44173: 24 p1
     • 35357: 24 p1
-    • 29341: 3.34 kg
+    • 49001: 3.34 kg
     • 14903: 4 p1
     ... and 6 more
 

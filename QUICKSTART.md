@@ -33,7 +33,7 @@ Before starting, ensure you have:
 1. Go to [Lifecycle Services](https://lcs.dynamics.com)
 2. Open your environment → Copy **Environment ID**
 3. Note your D365 URL: `https://[instance].operations.dynamics.com`
-4. Note your legal entity code (e.g., "usmf")
+4. Note your legal entity code (e.g., "500")
 
 ### Step 3: Clone and Configure (5 minutes)
 
@@ -61,7 +61,7 @@ Edit `appsettings.json`:
   "D365": {
     "EnvironmentId": "PASTE-YOUR-ENVIRONMENT-ID",
     "BaseUrl": "https://YOUR-INSTANCE.operations.dynamics.com",
-    "OrganizationId": "usmf"
+    "OrganizationId": "500"
   }
 }
 ```

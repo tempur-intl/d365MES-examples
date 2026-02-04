@@ -174,7 +174,7 @@ Each sample project has an `appsettings.json` file. Update with your values:
 - [ ] **ClientSecret**: From Azure AD (Step 1.3)
 - [ ] **EnvironmentId**: From LCS (Step 2.1)
 - [ ] **BaseUrl**: Your D365 URL (Step 2.2)
-- [ ] **OrganizationId**: Your legal entity (e.g., "usmf")
+- [ ] **OrganizationId**: Your legal entity (e.g., "500")
 
 ### Step 3: Build Solution
 

@@ -82,6 +82,41 @@ class Program
             }
 
             Console.WriteLine("\n=== Query completed successfully ===");
+
+            // Query on-hand inventory by LicensePlateId
+            var licensePlateQuery = new OnHandQueryRequest
+            {
+                DimensionDataSource = "fno",
+                Filters = new QueryFilters
+                {
+                    OrganizationId = new List<string> { config.OrganizationId },
+                    LicensePlateId = new List<string> { "49001" } // Example LicensePlateId - replace with actual value
+                },
+                GroupByValues = new List<string> { "BatchId", "LocationId", "WMSLocationId", "SiteId" },
+                ReturnNegative = true
+            };
+
+            var licensePlateResults = await ivaService.QueryOnHandAsync(licensePlateQuery);
+
+            // Output results as formatted JSON
+            Console.WriteLine("\n=== LicensePlateId Query Results ===");
+            Console.WriteLine($"Found {licensePlateResults.Count} inventory record(s) for LicensePlateId\n");
+
+            if (licensePlateResults.Count > 0)
+            {
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                };
+                var json = JsonSerializer.Serialize(licensePlateResults, jsonOptions);
+                Console.WriteLine(json);
+            }
+            else
+            {
+                Console.WriteLine("No inventory records found for the specified LicensePlateId.");
+            }
+
+            Console.WriteLine("\n=== LicensePlateId query completed successfully ===");
         }
         catch (Exception ex)
         {

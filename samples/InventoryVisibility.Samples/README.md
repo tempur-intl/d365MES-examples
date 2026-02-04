@@ -7,9 +7,7 @@ This project demonstrates how to authenticate with and call the Inventory Visibi
 The Inventory Visibility Add-in provides real-time inventory tracking and management capabilities. This sample demonstrates:
 
 - ✅ Two-step authentication (Azure AD → IVA access token)
-- ✅ Querying on-hand inventory
-- ✅ Posting inventory change events
-- ✅ Creating soft reservations
+- ✅ Querying on-hand inventory by various dimensions including LicensePlateId
 
 ## 🔐 Authentication Flow
 
@@ -34,7 +32,7 @@ Update `appsettings.json` with your environment details:
   "D365": {
     "EnvironmentId": "your-environment-id",
     "BaseUrl": "https://your-instance.operations.dynamics.com",
-    "OrganizationId": "usmf"
+    "OrganizationId": "500"
   },
   "InventoryVisibility": {
     "SecurityServiceUrl": "https://securityservice.operations365.dynamics.com",
@@ -48,7 +46,7 @@ Update `appsettings.json` with your environment details:
 - **TenantId**: Azure Portal → Azure Active Directory → Overview → Tenant ID
 - **ClientId** & **ClientSecret**: Azure Portal → App Registrations → Your App
 - **EnvironmentId**: Lifecycle Services → Environment Details
-- **OrganizationId**: Your legal entity (e.g., "usmf")
+- **OrganizationId**: Your legal entity (e.g., "500")
 
 ## 🚀 Running the Samples
 
@@ -66,7 +64,7 @@ var query = new OnHandQueryRequest
 {
     Filters = new QueryFilters
     {
-        OrganizationId = new List<string> { "usmf" },
+        OrganizationId = new List<string> { "500" },
         ProductId = new List<string> { "FoamSheet-QK" },
         SiteId = new List<string> { "1" },
         LocationId = new List<string> { "11" }
@@ -77,61 +75,29 @@ var query = new OnHandQueryRequest
 var results = await ivaService.QueryOnHandAsync(query);
 ```
 
-### 2. Post On-Hand Change
+### 2. Query On-Hand Inventory by LicensePlateId
 
 ```csharp
-var changeEvent = new OnHandChangeRequest
+var licensePlateQuery = new OnHandQueryRequest
 {
-    Id = $"mes-event-{Guid.NewGuid()}",
-    OrganizationId = "usmf",
-    ProductId = "FoamSheet-QK",
-    Dimensions = new Dictionary<string, string>
+    Filters = new QueryFilters
     {
-        ["siteId"] = "1",
-        ["locationId"] = "11"
+        OrganizationId = new List<string> { "500" },
+        LicensePlateId = new List<string> { "49001" }
     },
-    Quantities = new Dictionary<string, Dictionary<string, decimal>>
-    {
-        ["mes"] = new Dictionary<string, decimal>
-        {
-            ["produced"] = 10
-        }
-    }
+    GroupByValues = new List<string> { "ProductId", "SiteId", "LocationId" }
 };
 
-await ivaService.PostOnHandChangeAsync(changeEvent);
-```
-
-### 3. Create Soft Reservation
-
-```csharp
-var reservation = new ReservationRequest
-{
-    Id = $"reserve-{Guid.NewGuid()}",
-    OrganizationId = "usmf",
-    ProductId = "FoamSheet-QK",
-    Quantity = 5,
-    Modifier = "softReservOrdered",
-    Dimensions = new Dictionary<string, string>
-    {
-        ["siteId"] = "1",
-        ["locationId"] = "11"
-    }
-};
-
-var result = await ivaService.CreateReservationAsync(reservation);
+var results = await ivaService.QueryOnHandAsync(licensePlateQuery);
 ```
 
 ## 🏭 Manufacturing Use Cases
 
 ### Material Tracking
-Use on-hand queries to track raw materials (foam blocks, fabric) across production lines.
+Use on-hand queries to track raw materials (foam blocks, covers, plates) across production lines, including querying by LicensePlateId for pallet-level tracking.
 
-### Production Reporting
-Post on-hand changes when materials are consumed or products are completed on assembly lines.
-
-### Order Fulfillment
-Create soft reservations to allocate finished goods for customer orders.
+### Inventory Monitoring
+Monitor inventory levels in real-time for production planning and MES integration.
 
 ## 🛠️ Best Practices
 

@@ -33,6 +33,9 @@ public class QueryFilters
 
     [JsonPropertyName("LocationId")]
     public List<string> LocationId { get; set; } = new();
+
+    [JsonPropertyName("LicensePlateId")]
+    public List<string> LicensePlateId { get; set; } = new();
 }
 
 /// <summary>

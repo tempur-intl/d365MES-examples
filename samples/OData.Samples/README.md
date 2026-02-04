@@ -31,7 +31,7 @@ Update `appsettings.json` (or `appsettings.Development.json` for local developme
   },
   "D365": {
     "BaseUrl": "https://your-instance.operations.dynamics.com",
-    "OrganizationId": "usmf"
+    "OrganizationId": "500"
   }
 }
 ```
