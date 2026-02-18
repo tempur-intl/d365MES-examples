@@ -9,66 +9,51 @@
 
 ## Data Sources
 
-### 1. JmgTermReg (Primary Data Source)
+### 1. ProdTable (Primary Data Source)
 - **Join Type**: Primary
-- Job terminal registration records
-
-### 2. JmgJobTable
-- **Join Type**: Inner Join
-- **Join Condition**: `JmgTermReg.JobId == JmgJobTable.JobId`
-- Job details and operations
-
-### 3. ProdRouteJob
-- **Join Type**: Inner Join
-- **Join Condition**: `JmgJobTable.JobId == ProdRouteJob.JobId`
-- Production route jobs
-
-### 4. ProdTable
-- **Join Type**: Inner Join
-- **Join Condition**: `ProdRouteJob.ProdId == ProdTable.ProdId`
 - Production order header information
 
-### 5. InventTable
+### 2. InventTable
 - **Join Type**: Inner Join
 - **Join Condition**: `JmgJobTable.ItemId == InventTable.ItemId`
 - Item master data
 
-### 6. SalesLine
+### 3. SalesLine
 - **Join Type**: Left Outer Join
 - **Join Condition**: `ProdTable.ProdId == SalesLine.InventRefId`
 - Sales order line reference
 
-### 7. SalesTable
+### 4. SalesTable
 - **Join Type**: Left Outer Join
 - **Join Condition**: `SalesLine.SalesId == SalesTable.SalesId`
 - Customer delivery information
 
-### 8. LogisticsPostalAddress
+### 5. LogisticsPostalAddress
 - **Join Type**: Left Outer Join
 - **Join Condition**: `SalesTable.DeliveryPostalAddress == LogisticsPostalAddress.RecId`
 - Delivery postal address details (for country filtering)
 
-### 9. TSILogoSetup
+### 6. TSILogoSetup
 - **Join Type**: Inner Join
 - **Join Condition**: Complex filtering (see Logo Filtering Logic section)
 - Main logo configuration table
 
-### 10. TSILogoSetupFamily
+### 7. TSILogoSetupFamily
 - **Join Type**: Left Outer Join
 - **Join Condition**: `TSILogoSetup.TSILogoId == TSILogoSetupFamily.TSILogoId`
 - Family filter records (optional)
 
-### 11. TSILogoSetupCounty
+### 8. TSILogoSetupCounty
 - **Join Type**: Left Outer Join
 - **Join Condition**: `TSILogoSetup.TSILogoId == TSILogoSetupCounty.TSILogoId`
 - Country filter records (optional)
 
-### 12. EcoResProduct
+### 9. EcoResProduct
 - **Join Type**: Left Outer Join
 - **Join Condition**: `InventTable.Product == EcoResProduct.RecId`
 - Product master record (for attribute lookups)
 
-### 13. EcoResAttribute
+### 10. EcoResAttribute
 - **Join Type**: Left Outer Join
 - **Join Condition**: `EcoResAttribute.Name == TSILogoSetup.TSILogoId`
 - Attribute definitions (to check if logo ID matches an attribute name)
@@ -82,18 +67,17 @@
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
-| `RecId` | Int64 | `JmgTermReg` | `RecId` | Yes | Primary key (links to TSI_LabelEntity) |
+| `RecId` | Int64 | `ProdTable` | `RecId` | Yes | Primary key (links to TSI_LabelEntity) |
 | `ProdId` | String (20) | `ProdTable` | `ProdId` | Yes | Production order ID (for filtering) |
-| `JobId` | String (20) | `JmgJobTable` | `JobId` | Yes | Job ID (for filtering) |
 | `TSILogoId` | String | `TSILogoSetup` | `TSILogoId` | Yes | Logo identifier |
 | `TSILogoPath` | String | `TSILogoSetup` | `TSILogoPath` | Yes | File path to logo image |
 | `TSILogoPosition` | Integer | `TSILogoSetup` | `TSILogoPosition` | Yes | Display position on label (1-10) |
 | `TSILogIdDescr` | String | `TSILogoSetup` | `TSILogIdDescr` | No | Logo description |
-| `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
+| `dataAreaId` | String (4) | `ProdTable` | `dataAreaId` | Yes | Company identifier |
 
 ## Required Query Parameters
 
-**IMPORTANT**: This entity MUST be called with either `JobId` or `ProdId` filter to prevent full table scans.
+**IMPORTANT**: This entity MUST be called with `ProdId` filter to prevent full table scans.
 
 **Note**: When accessed via `$expand=Logos` from TSI_LabelEntity, this validation is automatically satisfied by the parent entity's filters.
 
@@ -142,9 +126,8 @@ public boolean validateRead()
 
 **Valid Queries**:
 ```
-GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'
 GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
-GET /data/TSI_Labels?$filter=JobId eq 'JOB-12345'&$expand=Logos  // Automatic
+GET /data/TSI_Labels?$filter=ProdId eq 'PROD-001234'&$expand=Logos  // Automatic
 ```
 
 ## Logo Filtering Logic
@@ -278,16 +261,13 @@ ORDER BY TSILogoSetup.TSILogoPosition, TSILogoSetup.TSILogoId
 - **Inverse Navigation**: `Logos` (from label to logos)
 
 **Navigation Chain (First-Level Expansion Only):**
-- TSI_JmgJobEntity → `Label` → TSI_LabelEntity (first level)
-- TSI_LabelEntity → `Logos` → TSI_LabelLogoEntity (first level)
+- TSI_LabelEntity → `Logos` → TSI_LabelLogoEntity (first level only)
 - **D365 Limitation**: Only first-level $expand supported - nested expansion NOT supported
-- **Recommended**: Query TSI_LabelEntity directly: `GET /data/TSI_Labels?$filter=JobId eq 'JOB-12345'&$expand=Logos`
+- **Recommended**: Query TSI_LabelEntity directly: `GET /data/TSI_Labels?$filter=ProdId eq 'PROD-001234'&$expand=Logos`
 
 ## Security
 
 ### Privileges Required
-- Read access to `JmgTermReg`
-- Read access to `JmgJobTable`
 - Read access to `ProdTable`
 - Read access to `InventTable`
 - Read access to `SalesLine`
@@ -335,19 +315,13 @@ GET /data/TSI_LabelLogos
 GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$orderby=TSILogoPosition
 ```
 
-### Example Query - Get Logos for Specific Job
-```
-GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$orderby=TSILogoPosition
-```
-
 ### Example Response
 ```json
 {
   "value": [
     {
-      "RecId": 123456,
+      "RecId": 5637144576,
       "ProdId": "PROD-001234",
-      "JobId": "JOB-12345",
       "TSILogoId": "CEMD",
       "TSILogoPath": "\\\\server\\logos\\cemd.png",
       "TSILogoPosition": 1,
@@ -355,9 +329,8 @@ GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$o
       "dataAreaId": "500"
     },
     {
-      "RecId": 123456,
+      "RecId": 5637144576,
       "ProdId": "PROD-001234",
-      "JobId": "JOB-12345",
       "TSILogoId": "Triman",
       "TSILogoPath": "\\\\server\\logos\\triman.png",
       "TSILogoPosition": 2,
@@ -376,9 +349,8 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$ex
 ### Example Expanded Response
 ```json
 {
-  "RecId": 123456,
+  "RecId": 5637144576,
   "ProdId": "PROD-001234",
-  "JobId": "JOB-12345",
   "LabelAddress": "123 Main St",
   "LabelSalesOrder": "SO-001234",
   "UDI": "(01)12345678901234(21)PROD-001",
@@ -405,9 +377,8 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$ex
 
 ```typescript
 export interface TSI_LabelLogo {
-  RecId: number; // Links to TSI_Label.RecId
-  ProdId: string; // Production order ID (for filtering)
-  JobId: string; // Job ID (for filtering)
+  RecId: number; // Links to TSI_Label.RecId (ProdTable.RecId)
+  ProdId: string; // Production order ID
   TSILogoId: string;
   TSILogoPath: string;
   TSILogoPosition: number;
@@ -432,7 +403,7 @@ export interface TSI_LabelWithLogos extends TSI_Label {
 - [ ] Implement Filter 4: Item attribute filter logic (boolean attributes)
 - [ ] Retrieve product family dimension (F_Family) from item
 - [ ] Map all fields from source tables
-- [ ] Implement validateRead() method to enforce JobId or ProdId filter
+- [ ] Implement validateRead() method to enforce ProdId filter
 - [ ] Configure ordering by TSILogoPosition
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Create navigation property relationship to TSI_LabelEntity
@@ -469,21 +440,17 @@ WHERE ls.TSILogoActive = 1;
 
 ### Verify Logo Filtering for Job
 ```sql
--- Test complete filtering logic for a specific job
+-- Test complete filtering logic for a specific production order
 SELECT
-  jtr.RecId,
+  pt.RecId,
   pt.ProdId,
-  jtr.JobId,
   ls.TSILogoId,
   ls.TSILogoPath,
   ls.TSILogoPosition,
   ls.TSILogIdDescr,
   ls.TSIAllFamilies,
   lpa.CountryRegionId AS DestCountry
-FROM JmgTermReg jtr
-INNER JOIN JmgJobTable jjt ON jtr.JobId = jjt.JobId
-INNER JOIN ProdRouteJob prj ON jjt.JobId = prj.JobId
-INNER JOIN ProdTable pt ON prj.ProdId = pt.ProdId
+FROM ProdTable pt
 LEFT JOIN SalesLine sl ON pt.ProdId = sl.InventRefId
 LEFT JOIN SalesTable st ON sl.SalesId = st.SalesId
 LEFT JOIN LogisticsPostalAddress lpa ON st.DeliveryPostalAddress = lpa.RecId

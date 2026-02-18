@@ -8,61 +8,46 @@
 
 ## Data Sources
 
-### 1. JmgTermReg (Primary Data Source)
+### 1. ProdTable (Primary Data Source)
 - **Join Type**: Primary
-- Job terminal registration records
-
-### 2. JmgJobTable
-- **Join Type**: Inner Join
-- **Join Condition**: `JmgTermReg.JobId == JmgJobTable.JobId`
-- Job details and operations
-
-### 3. ProdRouteJob
-- **Join Type**: Inner Join
-- **Join Condition**: `JmgJobTable.JobId == ProdRouteJob.JobId`
-- Production route jobs
-
-### 4. ProdTable
-- **Join Type**: Inner Join
-- **Join Condition**: `ProdRouteJob.ProdId == ProdTable.ProdId`
 - Production order header information
 
-### 5. InventTable
+### 2. InventTable
 - **Join Type**: Inner Join
-- **Join Condition**: `JmgJobTable.ItemId == InventTable.ItemId`
+- **Join Condition**: `ProdTable.ItemId == InventTable.ItemId`
 - Item master data
 
-### 6. InventDim
+### 3. InventDim
 - **Join Type**: Inner Join
 - **Join Condition**: `ProdTable.InventDimId == InventDim.InventDimId`
 - Inventory dimensions (batch, config, etc.)
 
-### 7. SalesLine
+### 4. SalesLine
 - **Join Type**: Left Outer Join
 - **Join Condition**: `ProdTable.ProdId == SalesLine.InventRefId`
 - Sales order line reference
 
-### 8. SalesTable
+### 5. SalesTable
 - **Join Type**: Left Outer Join
 - **Join Condition**: `SalesLine.SalesId == SalesTable.SalesId`
 - Customer delivery information
 
-### 9. LogisticsPostalAddress
+### 6. LogisticsPostalAddress
 - **Join Type**: Left Outer Join
 - **Join Condition**: `SalesTable.DeliveryPostalAddress == LogisticsPostalAddress.RecId`
 - Delivery postal address details
 
-### 10. CustTable
+### 7. CustTable
 - **Join Type**: Left Outer Join
 - **Join Condition**: `SalesTable.CustAccount == CustTable.AccountNum`
 - Customer details
 
-### 11. DlvTerm
+### 8. DlvTerm
 - **Join Type**: Left Outer Join
 - **Join Condition**: `SalesTable.DlvTerm == DlvTerm.Code`
 - Delivery terms text
 
-### 12. InventItemBarcode
+### 9. InventItemBarcode
 - **Join Type**: Left Outer Join
 - **Join Condition**: Complex barcode lookup logic (see Barcode Logic section)
 - EAN codes
@@ -77,9 +62,8 @@
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
-| `RecId` | Int64 | `JmgTermReg` | `RecId` | Yes | Primary key (links to TSI_JmgJobEntity) |
+| `RecId` | Int64 | `ProdTable` | `RecId` | Yes | Primary key |
 | `ProdId` | String (20) | `ProdTable` | `ProdId` | Yes | Production order ID (for filtering) |
-| `JobId` | String (20) | `JmgJobTable` | `JobId` | Yes | Job ID (for filtering) |
 | `LabelAddress` | String | `LogisticsPostalAddress` | `Address` | No | Delivery address (formatted) |
 | `LabelAddressCountryRegionId` | String (10) | `CustTable` | `PartyCountry` | No | Customer country |
 | `LabelSalesAddressCountryRegionId` | String (10) | `LogisticsPostalAddress` | `CountryRegionId` | No | Delivery country |
@@ -97,7 +81,7 @@
 | `LabelExternalItemId` | String (20) | `SalesLine` | `ExternalItemId` | No | External item reference |
 | `UDI` | String | `TSIUDI` | `UDI` | No | Unique device ID (from custom TSIUDI table) |
 | `UDIUnit` | String | `TSIUDI` | `Unit` | No | Unit for the UDI (e.g., 'x1', 'x10', 'x100') |
-| `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
+| `dataAreaId` | String (4) | `ProdTable` | `dataAreaId` | Yes | Company identifier |
 
 ## Navigation Properties
 
@@ -115,23 +99,16 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$ex
 
 See [TSI_LabelLogoEntity.md](TSI_LabelLogoEntity.md) for logo filtering logic and implementation details.
 
-### Job (Many-to-One)
-- **Related Entity**: `TSI_JmgJobEntity`
-- **Relationship**: Multiple label records (per UDI unit) belong to one job
-- **Foreign Key**: `RecId`
-- **Navigation Name**: `Job`
-- **Inverse Navigation**: `Label` (from job to labels)
-
 **Recommended Pattern for MES (Label + Logos in One Call):**
 ```
-GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Logos
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$expand=Logos
 ```
 
-**Note**: D365 Finance & Operations only supports **first-level $expand**. Nested expansion like `$expand=Label($expand=Logos)` is NOT supported. Query this entity directly with `$expand=Logos` to get label data and logos together.
+**Note**: D365 Finance & Operations only supports **first-level $expand**. Query this entity directly with `$expand=Logos` to get label data and logos together.
 
 ### Required Query Parameters
 
-**IMPORTANT**: This entity MUST be called with either `JobId` or `ProdId` filter to prevent full table scans.
+**IMPORTANT**: This entity MUST be called with `ProdId` filter to prevent full table scans.
 
 **Enforcement**: Implement validation in the entity's `validateRead()` method:
 
@@ -176,15 +153,14 @@ public boolean validateRead()
 }
 ```
 
-**OData Impact**: Queries without JobId or ProdId filter will return an error:
+**OData Impact**: Queries without ProdId filter will return an error:
 ```
 GET /data/TSI_Labels?$filter=dataAreaId eq '500'
-// Returns error: "TSI_LabelEntity must be filtered by JobId or ProdId."
+// Returns error: "TSI_LabelEntity must be filtered by ProdId."
 ```
 
-**Valid Queries**:
+**Valid Query**:
 ```
-GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'
 GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
 ```
 
@@ -262,8 +238,6 @@ The following fields are custom extensions and must be verified to exist in your
 ## Security
 
 ### Privileges Required
-- Read access to `JmgTermReg`
-- Read access to `JmgJobTable`
 - Read access to `ProdTable`
 - Read access to `InventTable`
 - Read access to `InventDim`
@@ -309,11 +283,6 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500'
 GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
 ```
 
-### Example Query - Get Label Data for Specific Job
-```
-GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'
-```
-
 ### Example Query - Get Label Data with Logos Expanded
 ```
 GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$expand=Logos($orderby=TSILogoPosition)
@@ -335,9 +304,8 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234' and
 
 ```typescript
 export interface TSI_Label {
-  RecId: number; // Links to TSI_JmgJob.RecId
-  ProdId: string; // Production order ID (for filtering)
-  JobId: string; // Job ID (for filtering)
+  RecId: number; // ProdTable.RecId
+  ProdId: string; // Production order ID
   LabelAddress?: string;
   LabelAddressCountryRegionId?: string;
   LabelSalesAddressCountryRegionId?: string;
@@ -378,9 +346,8 @@ export interface TSI_LabelLogo {
 - [ ] Implement barcode lookup logic (computed field or method)
 - [ ] Implement DateWeek computation from SalesLine.ConfirmedDlv (computed field or method)
 - [ ] Create navigation property relationship to TSI_LabelLogoEntity (Logos)
-- [ ] Create navigation property relationship to TSI_JmgJobEntity (Job - inverse of Label)
 - [ ] Map all fields from source tables
-- [ ] Implement validateRead() method to enforce JobId or ProdId filter
+- [ ] Implement validateRead() method to enforce ProdId filter
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Build and synchronize
 - [ ] Grant security privileges

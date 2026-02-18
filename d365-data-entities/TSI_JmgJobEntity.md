@@ -78,31 +78,6 @@
 | `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `dataAreaId` | String (4) | `JmgTermReg` | `dataAreaId` | Yes | Company identifier |
 
-## Navigation Properties
-
-### Label (One-to-Many)
-- **Related Entity**: `TSI_LabelEntity`
-- **Relationship**: One job can have multiple label records (due to UDI units)
-- **Foreign Key**: `RecId`
-- **Navigation Name**: `Label`
-- **Usage**: Use `$expand=Label` to retrieve label data with job data
-
-**IMPORTANT**: D365 Finance & Operations only supports **first-level $expand**. Nested expansion like `$expand=Label($expand=Logos)` is NOT supported.
-
-**Option 1 - Get Job Data with Labels (First-Level Expansion):**
-```
-GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label
-```
-Returns job data with label records expanded (no logos).
-
-**Option 2 - Query TSI_LabelEntity Directly (Recommended for MES Label Printing):**
-```
-GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Logos
-```
-Single call retrieves all label data with logos expanded. This is the recommended approach for MES when label printing data is needed.
-
-See [TSI_LabelEntity.md](TSI_LabelEntity.md) for label field details and [TSI_LabelLogoEntity.md](TSI_LabelLogoEntity.md) for logo filtering logic.
-
 ## Query Filters
 
 ### Range on Primary Data Source
@@ -193,66 +168,25 @@ GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and ItemId eq 'ITEM123'
 GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
 ```
 
-### Example Query - Get Job with Labels (First-Level Expansion)
-```
-GET /data/TSI_JmgJobs?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Label
-```
-
-### Example Query - Get Labels with Logos (Recommended for MES)
-```
-GET /data/TSI_Labels?$filter=dataAreaId eq '500' and JobId eq 'JOB-12345'&$expand=Logos
-```
-
-**Response Structure (Job with Labels - First Level):**
+**Response Structure:**
 ```json
 {
   "RecId": 123456,
   "JobId": "JOB-12345",
+  "ProdId": "PROD-001234",
   "ItemId": "ITEM123",
   "EmplId": "EMP001",
   "ItemName": "Pillow Product",
-  "dataAreaId": "500",
-  "Label": [
-    {
-      "RecId": 123456,
-      "ProdId": "PROD-001234",
-      "JobId": "JOB-12345",
-      "LabelAddress": "123 Main St",
-      "LabelSalesOrder": "SO-001234",
-      "UDI": "(01)12345678901234(21)PROD-001",
-      "UDIUnit": "x1"
-    }
-  ]
+  "StartItems": 10,
+  "RegDateTime": "2026-02-18T10:30:00Z",
+  "dataAreaId": "500"
 }
 ```
 
-**Response Structure (Labels with Logos - Recommended):**
-```json
-{
-  "value": [
-    {
-      "RecId": 123456,
-      "ProdId": "PROD-001234",
-      "JobId": "JOB-12345",
-      "LabelAddress": "123 Main St",
-      "LabelSalesOrder": "SO-001234",
-      "UDI": "(01)12345678901234(21)PROD-001",
-      "UDIUnit": "x1",
-      "Logos": [
-        {
-          "TSILogoId": "CEMD",
-          "TSILogoPath": "\\\\server\\logos\\cemd.png",
-          "TSILogoPosition": 1
-        },
-        {
-          "TSILogoId": "Triman",
-          "TSILogoPath": "\\\\server\\logos\\triman.png",
-          "TSILogoPosition": 2
-        }
-      ]
-    }
-  ]
-}
+**For Label Printing Data:**
+Query TSI_LabelEntity separately using the ProdId:
+```
+GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$expand=Logos
 ```
 
 ## TypeScript Interface
@@ -283,27 +217,6 @@ export interface TSI_JmgJob {
   StandardPalletQuantity?: number;
   TSIShorteningLength?: number;
   dataAreaId: string;
-  Label?: TSI_Label[]; // Navigation property (use $expand=Label)
-}
-
-// Import from TSI_LabelEntity
-export interface TSI_Label {
-  RecId: number;
-  ProdId: string;
-  JobId: string;
-  LabelAddress?: string;
-  LabelSalesOrder?: string;
-  UDI?: string;
-  UDIUnit?: string;
-  // ... other label fields
-  Logos?: TSI_LabelLogo[];
-}
-
-export interface TSI_LabelLogo {
-  TSILogoId: string;
-  TSILogoPath: string;
-  TSILogoPosition: number;
-  TSILogIdDescr?: string;
 }
 ```
 
@@ -315,7 +228,6 @@ export interface TSI_LabelLogo {
 - [ ] Configure join conditions
 - [ ] Add query range filter (JobActive = 1)
 - [ ] Map all fields from source tables
-- [ ] Create navigation property relationship to TSI_LabelEntity (Label)
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Build and synchronize
 - [ ] Grant security privileges
@@ -355,6 +267,6 @@ WHERE jtr.JobActive = 1
 - This is a read-only entity for querying active jobs
 - Performance is critical - ensure indexes are in place
 - Entity is optimized for fast, frequent access
-- **MES Integration**: D365 only supports first-level $expand. Query TSI_LabelEntity directly with `$expand=Logos` for label + logo data in one call
-- Label data includes multiple rows per job when multiple UDI units exist
-- Navigation properties enable one-level expansion only
+- **MES Integration**: For label printing, query TSI_LabelEntity separately using ProdId from this entity
+- Use: `GET /data/TSI_Labels?$filter=ProdId eq '{ProdId}'&$expand=Logos` to get label data with logos
+- Jobs and Labels are separate queries - no navigation property between them
