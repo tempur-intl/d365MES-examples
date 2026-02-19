@@ -84,6 +84,11 @@ public class IntegratedService
                 var eventJson = JsonSerializer.Serialize(businessEvent, _jsonOptions);
                 Console.WriteLine(eventJson);
 
+                // Log specific event details
+                _logger.LogInformation("Event Type: {EventType}", businessEvent.BusinessEventId);
+                _logger.LogInformation("Production Order: {OrderNumber}", businessEvent.ProductionOrderNumber);
+                _logger.LogInformation("Resource: {Resource}", businessEvent.Resource);
+
                 // Step 2: Query production order details using OData
                 var productionOrder = await GetProductionOrderAsync(
                     businessEvent.ProductionOrderNumber!,

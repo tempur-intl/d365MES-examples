@@ -215,7 +215,7 @@ ServiceBusConsumerService.ReceiveMessagesAsync()
     ├─► PeekLock Message
     ├─► Deserialize BusinessEventEnvelope
     ├─► Parse Event Type
-    │   └─► ProductionOrderReleasedEvent
+    │   └─► TSIProductionOrderReleasedToMESBusinessEvent or TSIProductionOrderUpdatedMESEvent
     │
     ├─► Process Message
     │   ├─► Success → CompleteMessageAsync()

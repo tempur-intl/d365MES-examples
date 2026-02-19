@@ -37,7 +37,7 @@ class Program
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("=== D365 Integrated Event-Driven Sample ===");
         logger.LogInformation("This sample demonstrates:");
-        logger.LogInformation("1. Consuming ProductionOrderReleasedBusinessEvent from Service Bus");
+        logger.LogInformation("1. Consuming TSIProductionOrderReleasedToMESBusinessEvent from Service Bus");
         logger.LogInformation("2. Using the ProductionOrderNumber to query OData for details");
         logger.LogInformation("3. Retrieving related BOM lines for the production order\n");
 

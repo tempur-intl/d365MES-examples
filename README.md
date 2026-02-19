@@ -61,15 +61,15 @@ OData endpoint examples for reference data:
 
 ### 5. **ServiceBusEvents.Samples**
 Azure Service Bus event consumer for D365 business events:
-- ✅ Consume production order released events
+- ✅ Consume TSI production order events (released and updated)
 - ✅ Poll once mode (testing) or continuous listening (production)
 - ✅ Dead letter queue inspection
 - ✅ Automatic retry with DLQ handling
 
 ### 6. **IntegratedEventDriven.Samples**
 Combined Service Bus + OData integration:
-- ✅ Receive ProductionOrderReleasedBusinessEvent
-- ✅ Extract ProductionOrderNumber from event
+- ✅ Receive TSIProductionOrderReleasedToMESBusinessEvent
+- ✅ Extract ProductionOrderNumber and Resource from event
 - ✅ Query OData with filtered request for specific order
 - ✅ Retrieve BOM lines and related data
 - ✅ Demonstrates complete event-driven workflow

@@ -283,6 +283,10 @@ public class ServiceBusConsumerService
     {
         return eventId switch
         {
+            "TSIProductionOrderReleasedToMESBusinessEvent" =>
+                JsonSerializer.Deserialize<TSIProductionOrderReleasedToMESBusinessEvent>(businessEventJson, options),
+            "TSIProductionOrderUpdatedMESEvent" =>
+                JsonSerializer.Deserialize<TSIProductionOrderUpdatedMESEvent>(businessEventJson, options),
             "ProductionOrderReleasedBusinessEvent" =>
                 JsonSerializer.Deserialize<ProductionOrderReleasedEvent>(businessEventJson, options),
             _ => JsonSerializer.Deserialize<JsonElement>(businessEventJson, options)

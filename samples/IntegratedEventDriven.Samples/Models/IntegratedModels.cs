@@ -53,15 +53,45 @@ public class BusinessEventEnvelope
     [JsonPropertyName("BusinessEventId")]
     public string? BusinessEventId { get; set; }
 
+    [JsonPropertyName("BusinessEventLegalEntity")]
+    public string? BusinessEventLegalEntity { get; set; }
+
+    [JsonPropertyName("ContextRecordSubject")]
+    public string? ContextRecordSubject { get; set; }
+
+    [JsonPropertyName("ControlNumber")]
+    public long ControlNumber { get; set; }
+
+    [JsonPropertyName("EventId")]
+    public string? EventId { get; set; }
+
     [JsonPropertyName("EventTime")]
     [JsonConverter(typeof(D365DateTimeConverter))]
     public DateTime EventTime { get; set; }
 
-    [JsonPropertyName("LegalEntity")]
-    public string? LegalEntity { get; set; }
+    [JsonPropertyName("EventTimeIso8601")]
+    public string? EventTimeIso8601 { get; set; }
+
+    [JsonPropertyName("InitiatingUserAADObjectId")]
+    public string? InitiatingUserAADObjectId { get; set; }
+
+    [JsonPropertyName("MajorVersion")]
+    public int MajorVersion { get; set; }
+
+    [JsonPropertyName("MinorVersion")]
+    public int MinorVersion { get; set; }
+
+    [JsonPropertyName("ParentContextRecordSubjects")]
+    public List<string> ParentContextRecordSubjects { get; set; } = new();
 
     [JsonPropertyName("ProductionOrderNumber")]
     public string? ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("Resource")]
+    public string? Resource { get; set; }
+
+    [JsonPropertyName("LegalEntity")]
+    public string? LegalEntity { get; set; }
 
     [JsonPropertyName("ProductionOrderType")]
     public string? ProductionOrderType { get; set; }

@@ -82,7 +82,9 @@ D365IntegrationSamples/
 ├── samples/
 │   ├── InventoryVisibility.Samples/  # IVA API examples
 │   ├── MesIntegration.Samples/       # MES message service
-│   └── OData.Samples/                # OData queries
+│   ├── OData.Samples/                # OData queries
+│   ├── ServiceBusEvents.Samples/     # Service Bus event consumer
+│   └── IntegratedEventDriven.Samples/ # Combined Service Bus + OData
 ├── README.md                          # Overview
 ├── SETUP.md                          # Detailed setup guide
 └── QUICKSTART.md                     # This file
@@ -119,6 +121,25 @@ D365IntegrationSamples/
 - Checks inventory levels
 
 **Use when**: Loading reference data from D365 into MES
+
+### Service Bus Event Samples
+**Run**: `cd samples/ServiceBusEvents.Samples && dotnet run`
+
+- Consumes TSI production order events
+- Handles released and updated events
+- Processes messages in poll or continuous mode
+- Manages dead letter queues
+
+**Use when**: Reacting to production order changes in real-time
+
+### Integrated Event-Driven Samples
+**Run**: `cd samples/IntegratedEventDriven.Samples && DOTNET_ENVIRONMENT=Development dotnet run`
+
+- Receives TSI production order released events
+- Queries OData for order details and BOM
+- Demonstrates complete event-driven workflow
+
+**Use when**: Building automated MES responses to D365 events
 
 ## 🔍 Testing with Your Data
 

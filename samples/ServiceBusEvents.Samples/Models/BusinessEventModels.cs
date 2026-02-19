@@ -142,6 +142,12 @@ public class BusinessEventEnvelope
     [JsonPropertyName("BusinessEventId")]
     public string? BusinessEventId { get; set; }
 
+    [JsonPropertyName("BusinessEventLegalEntity")]
+    public string? BusinessEventLegalEntity { get; set; }
+
+    [JsonPropertyName("ContextRecordSubject")]
+    public string? ContextRecordSubject { get; set; }
+
     [JsonPropertyName("ControlNumber")]
     public long ControlNumber { get; set; }
 
@@ -152,17 +158,126 @@ public class BusinessEventEnvelope
     [JsonConverter(typeof(D365DateTimeConverter))]
     public DateTime EventTime { get; set; }
 
+    [JsonPropertyName("EventTimeIso8601")]
+    public string? EventTimeIso8601 { get; set; }
+
+    [JsonPropertyName("InitiatingUserAADObjectId")]
+    public string? InitiatingUserAADObjectId { get; set; }
+
     [JsonPropertyName("MajorVersion")]
     public int MajorVersion { get; set; }
 
     [JsonPropertyName("MinorVersion")]
     public int MinorVersion { get; set; }
 
+    [JsonPropertyName("ParentContextRecordSubjects")]
+    public List<string> ParentContextRecordSubjects { get; set; } = new();
+
+    [JsonPropertyName("ProductionOrderNumber")]
+    public string? ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("Resource")]
+    public string? Resource { get; set; }
+
     [JsonPropertyName("LegalEntity")]
     public string? LegalEntity { get; set; }
 
     [JsonPropertyName("BusinessEvent")]
     public string? BusinessEvent { get; set; }
+}
+
+/// <summary>
+/// TSI Production Order Released to MES Business Event
+/// Fired when planning/production has finalized/scheduled an order and it is ready to be picked up by the MES system
+/// </summary>
+public class TSIProductionOrderReleasedToMESBusinessEvent
+{
+    [JsonPropertyName("BusinessEventId")]
+    public string? BusinessEventId { get; set; }
+
+    [JsonPropertyName("BusinessEventLegalEntity")]
+    public string? BusinessEventLegalEntity { get; set; }
+
+    [JsonPropertyName("ContextRecordSubject")]
+    public string? ContextRecordSubject { get; set; }
+
+    [JsonPropertyName("ControlNumber")]
+    public long ControlNumber { get; set; }
+
+    [JsonPropertyName("EventId")]
+    public string? EventId { get; set; }
+
+    [JsonPropertyName("EventTime")]
+    [JsonConverter(typeof(D365DateTimeConverter))]
+    public DateTime EventTime { get; set; }
+
+    [JsonPropertyName("EventTimeIso8601")]
+    public string? EventTimeIso8601 { get; set; }
+
+    [JsonPropertyName("InitiatingUserAADObjectId")]
+    public string? InitiatingUserAADObjectId { get; set; }
+
+    [JsonPropertyName("MajorVersion")]
+    public int MajorVersion { get; set; }
+
+    [JsonPropertyName("MinorVersion")]
+    public int MinorVersion { get; set; }
+
+    [JsonPropertyName("ParentContextRecordSubjects")]
+    public List<string> ParentContextRecordSubjects { get; set; } = new();
+
+    [JsonPropertyName("ProductionOrderNumber")]
+    public string? ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("Resource")]
+    public string? Resource { get; set; }
+}
+
+/// <summary>
+/// TSI Production Order Updated MES Event
+/// Fired when production order data has been updated (qty, etc.) and MES system should refresh its data
+/// </summary>
+public class TSIProductionOrderUpdatedMESEvent
+{
+    [JsonPropertyName("BusinessEventId")]
+    public string? BusinessEventId { get; set; }
+
+    [JsonPropertyName("BusinessEventLegalEntity")]
+    public string? BusinessEventLegalEntity { get; set; }
+
+    [JsonPropertyName("ContextRecordSubject")]
+    public string? ContextRecordSubject { get; set; }
+
+    [JsonPropertyName("ControlNumber")]
+    public long ControlNumber { get; set; }
+
+    [JsonPropertyName("EventId")]
+    public string? EventId { get; set; }
+
+    [JsonPropertyName("EventTime")]
+    [JsonConverter(typeof(D365DateTimeConverter))]
+    public DateTime EventTime { get; set; }
+
+    [JsonPropertyName("EventTimeIso8601")]
+    public string? EventTimeIso8601 { get; set; }
+
+    [JsonPropertyName("InitiatingUserAADObjectId")]
+    public string? InitiatingUserAADObjectId { get; set; }
+
+    [JsonPropertyName("MajorVersion")]
+    public int MajorVersion { get; set; }
+
+    [JsonPropertyName("MinorVersion")]
+    public int MinorVersion { get; set; }
+
+    [JsonPropertyName("ParentContextRecordSubjects")]
+    public List<string> ParentContextRecordSubjects { get; set; } = new();
+
+    [JsonPropertyName("ProductionOrderNumber")]
+    public string? ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("Resource")]
+    public string? Resource { get; set; }
 }
 
 /// <summary>

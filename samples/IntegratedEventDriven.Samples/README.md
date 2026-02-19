@@ -2,15 +2,15 @@
 
 This sample demonstrates a complete event-driven integration workflow combining Service Bus events with OData queries. It shows how to:
 
-1. **Receive** a `ProductionOrderReleasedBusinessEvent` from Azure Service Bus
-2. **Extract** the `ProductionOrderNumber` from the event
+1. **Receive** a `TSIProductionOrderReleasedToMESBusinessEvent` from Azure Service Bus
+2. **Extract** the `ProductionOrderNumber` and `Resource` from the event
 3. **Query** D365 OData API to get full production order details using a filtered request
 4. **Retrieve** related BOM lines for material requirements
 
 ## 📋 Prerequisites
 
 - Azure Service Bus topic with subscription (see `ServiceBusEvents.Samples` for setup)
-- D365 Business Events configured to publish `ProductionOrderReleasedBusinessEvent`
+- D365 Business Events configured to publish `TSIProductionOrderReleasedToMESBusinessEvent`
 - Azure AD app registration with D365 API permissions
 - .NET 8.0 SDK
 
