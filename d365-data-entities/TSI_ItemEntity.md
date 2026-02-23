@@ -17,30 +17,32 @@
 - **Join Condition**: `InventTable.Product == EcoResProduct.RecId`
 - Global product master
 
-### 3. EcoResProductTranslation
-- **Join Type**: Left Outer Join
+### 3. EcoResProductSystemLanguage
+- **Join Type**: Outer Join
+- **Join Condition**: `EcoResProduct.RecId == EcoResProductSystemLanguage.Product`
+- System language for product translations
+
+### 4. EcoResProductTranslation
+- **Join Type**: Outer Join
 - **Join Condition**:
   - `EcoResProduct.RecId == EcoResProductTranslation.Product`
-  - `EcoResProductTranslation.LanguageId == SystemParameters.LanguageId`
+  - `EcoResProductSystemLanguage.LanguageId == EcoResProductTranslation.SystemLanguageId`
 - Product name translations (multi-language support)
 
-### 4. InventItemGroupItem
-- **Join Type**: Left Outer Join
-- **Join Condition**:
-  - `InventTable.ItemId == InventItemGroupItem.ItemId`
-  - `InventTable.dataAreaId == InventItemGroupItem.ItemDataAreaId`
+### 5. InventItemGroupItem
+- **Join Type**: Outer Join
+- **Join Condition**: Uses standard relations (InventTable relation)
 - Item-to-item-group assignment
 
 ## Field Mappings
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
-| `ItemId` | String (20) | `InventTable` | `ItemId` | Yes | Item identifier |
-| `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | Yes | Item name/description (translated) |
-| `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | Yes | Item group identifier |
-| `ABCValue` | Enum | `EcoResProduct` | `ABCValue` | Yes | ABC classification |
-| `BOMUnitId` | String (10) | `InventTable` | `BOMUnitId` | Yes | BOM unit of measure |
-| `dataAreaId` | String (4) | `InventTable` | `dataAreaId` | Yes | Company identifier |
+| `ItemId` | String (20) | `InventTable` | `ItemId` | No | Item identifier |
+| `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | No | Item name/description (translated) |
+| `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | No | Item group identifier |
+| `ABCValue` | Enum | `InventTable` | `ABCValue` | No | ABC classification |
+| `BOMUnitId` | String (10) | `InventTable` | `BOMUnitId` | No | BOM unit of measure |
 
 ## Query Filters
 
@@ -54,9 +56,16 @@
 - **Public**: Yes
 - **Allow Edit**: No (Read-only entity)
 - **Data Management Enabled**: Yes
+- **Data Management Staging Table**: TSI_ItemStaging
 - **OData Enabled**: Yes
-- **Primary Key**: ItemId, dataAreaId
-- **Primary Index**: ItemId, dataAreaId
+- **Is Read Only**: Yes
+- **Primary Key**: EntityKey (ItemId)
+- **Primary Company Context**: DataAreaId
+- **Configuration Key**: LogisticsBasic
+- **Form Reference**: EcoResProductInformation
+- **Label**: @TSI:ItemsEntityMES
+- **Public Collection Name**: TSI_Items
+- **Public Entity Name**: TSI_Item
 
 ## Security
 
@@ -84,22 +93,22 @@ CREATE INDEX IX_InventItemGroupItem_ItemId
 ## OData Endpoint
 
 ```
-GET /data/TSI_Items?$filter=dataAreaId eq '500'
+GET /data/TSI_Items
 ```
 
 ### Example Query - Get Specific Item
 ```
-GET /data/TSI_Items?$filter=dataAreaId eq '500' and ItemId eq 'PILLOW-001'
+GET /data/TSI_Items?$filter=ItemId eq 'PILLOW-001'
 ```
 
 ### Example Query - Get Items by Group
 ```
-GET /data/TSI_Items?$filter=dataAreaId eq '500' and ItemGroupId eq 'PILLOW'
+GET /data/TSI_Items?$filter=ItemGroupId eq 'PILLOW'
 ```
 
 ### Example Query - Select Specific Fields
 ```
-GET /data/TSI_Items?$filter=dataAreaId eq '500'&$select=ItemId,ItemName,ItemGroupId,BOMUnitId
+GET /data/TSI_Items?$select=ItemId,ItemName,ItemGroupId,BOMUnitId
 ```
 
 ## TypeScript Interface
@@ -111,7 +120,6 @@ export interface TSI_Item {
   ItemGroupId: string;
   ABCValue: number; // 0=A, 1=B, 2=C
   BOMUnitId: string;
-  dataAreaId: string;
 }
 
 // Helper for ABC classification
@@ -144,28 +152,25 @@ SELECT
     it.ITEMID,
     pt.NAME AS ITEMNAME,
     iig.ITEMGROUPID,
-    p.ABCVALUE,
-    it.BOMUNITID,
-    it.DATAAREAID
+    it.ABCVALUE,
+    it.BOMUNITID
 FROM InventTable it
 INNER JOIN EcoResProduct p ON it.PRODUCT = p.RECID
+LEFT JOIN EcoResProductSystemLanguage psl ON p.RECID = psl.PRODUCT
 LEFT JOIN EcoResProductTranslation pt
     ON p.RECID = pt.PRODUCT
-    AND pt.LANGUAGEID = 'en-us'
-LEFT JOIN InventItemGroupItem iig
-    ON it.ITEMID = iig.ITEMID
-    AND it.DATAAREAID = iig.ITEMDATAAREAID
-WHERE it.DATAAREAID = '500'
+    AND psl.LanguageId = pt.SystemLanguageId
+LEFT JOIN InventItemGroupItem iig ON it.ITEMID = iig.ITEMID
 ORDER BY it.ITEMID
 ```
 
 ## Notes
 
 - This is a read-only entity for querying item master data
-- Returns one row per item (per company)
+- Returns one row per item
 - Item names support multi-language via EcoResProductTranslation
-- ItemGroupId comes from InventItemGroupItem relation table (changed in AX 2012+)
+- ItemGroupId comes from InventItemGroupItem relation table
 - BOMUnitId is directly on InventTable
-- ABCValue moved to EcoResProduct (not on InventTable)
+- ABCValue is on InventTable
 - Entity is optimized for fast, frequent access
 - Good candidate for caching as item master data changes infrequently

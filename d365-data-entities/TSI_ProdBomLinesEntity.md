@@ -1,8 +1,8 @@
-# TSI_ProdBomLinesEntity - Production BOM Lines Entity Definition
+# TSI_ProdBOMLinesEntity - Production BOM Lines Entity Definition
 
 ## Overview
 
-**Entity Name**: `TSI_ProdBomLinesEntity`
+**Entity Name**: `TSI_ProdBOMLinesEntity`
 **Purpose**: Production BOM lines with item details and inventory dimensions
 **Primary Use**: MES system material requirements and consumption tracking
 
@@ -14,9 +14,7 @@
 
 ### 2. InventTable
 - **Join Type**: Inner Join
-- **Join Condition**:
-  - `ProdBOM.ItemId == InventTable.ItemId`
-  - `ProdBOM.dataAreaId == InventTable.dataAreaId`
+- **Join Condition**: `ProdBOM.ItemId == InventTable.ItemId`
 - Released products (company-specific)
 
 ### 3. EcoResProduct
@@ -24,28 +22,31 @@
 - **Join Condition**: `InventTable.Product == EcoResProduct.RecId`
 - Global product master
 
-### 4. EcoResProductTranslation
-- **Join Type**: Left Outer Join
+### 4. EcoResProductSystemLanguage
+- **Join Type**: Outer Join
+- **Join Condition**: `EcoResProduct.RecId == EcoResProductSystemLanguage.Product`
+- System language for product translations
+
+### 5. EcoResProductTranslation
+- **Join Type**: Outer Join
 - **Join Condition**:
   - `EcoResProduct.RecId == EcoResProductTranslation.Product`
-  - `EcoResProductTranslation.LanguageId == SystemParameters.LanguageId`
+  - `EcoResProductSystemLanguage.LanguageId == EcoResProductTranslation.SystemLanguageId`
 - Product name translations (multi-language support)
 
-### 5. InventItemGroupItem
-- **Join Type**: Left Outer Join
+### 6. InventItemGroupItem
+- **Join Type**: Outer Join
 - **Join Condition**:
   - `InventTable.ItemId == InventItemGroupItem.ItemId`
   - `InventTable.dataAreaId == InventItemGroupItem.ItemDataAreaId`
 - Item-to-item-group assignment
 
-### 6. TSIInventTable
-- **Join Type**: Left Outer Join
-- **Join Condition**:
-  - `InventTable.ItemId == TSIInventTable.ItemId`
-  - `InventTable.dataAreaId == TSIInventTable.DataAreaId`
+### 7. TSIInventTable
+- **Join Type**: Outer Join
+- **Join Condition**: `InventTable.ItemId == TSIInventTable.TSIItemId`
 - Custom InventTable extension for additional fields
 
-### 7. InventDim
+### 8. InventDim
 - **Join Type**: Inner Join
 - **Join Condition**: `ProdBOM.InventDimId == InventDim.InventDimId`
 - Inventory dimensions
@@ -56,27 +57,26 @@
 |-----------|-----------|--------------|--------------|-----------|-------------|
 | `ProdId` | String (20) | `ProdBOM` | `ProdId` | Yes | Production order ID |
 | `ItemId` | String (20) | `ProdBOM` | `ItemId` | Yes | Component item ID |
-| `LineNum` | Real | `ProdBOM` | `LineNum` | Yes | BOM line number |
-| `BOMQty` | Real | `ProdBOM` | `BOMQty` | Yes | Required quantity |
+| `LineNum` | Real | `ProdBOM` | `LineNum` | No | BOM line number |
+| `BOMQty` | Real | `ProdBOM` | `BOMQty` | No | Required quantity |
 | `BOMQtySerie` | Real | `ProdBOM` | `BOMQtySerie` | No | Series quantity |
-| `UnitId` | String (10) | `ProdBOM` | `UnitId` | Yes | Unit of measure |
+| `UnitId` | String (10) | `ProdBOM` | `UnitId` | No | Unit of measure |
 | `Position` | Integer | `ProdBOM` | `Position` | No | Position in BOM |
 | `ScrapVar` | Real | `ProdBOM` | `ScrapVar` | No | Variable scrap percentage |
-| `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | Yes | Item description (translated) |
+| `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | No | Item description (translated) |
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias name |
-| `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | Yes | Item group |
+| `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | No | Item group |
 | `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
 | `Width` | Real | `InventTable` | `Width` | No | Item width |
 | `Height` | Real | `InventTable` | `Height` | No | Item height |
 | `TSIShorteningLength` | Real | `TSIInventTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `TSIBlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | No | Block width (custom field) |
-| `InventLocationId` | String (10) | `InventDim` | `InventLocationId` | Yes | Warehouse |
-| `WMSLocationId` | String (20) | `InventDim` | `WMSLocationId` | No | WMS location |
-| `InventDimId` | String (20) | `ProdBOM` | `InventDimId` | Yes | Dimension ID |
+| `InventLocationId` | String (10) | `InventDim` | `InventLocationId` | No | Warehouse |
+| `wMSLocationId` | String (20) | `InventDim` | `wMSLocationId` | No | WMS location |
+| `inventDimId` | String (20) | `ProdBOM` | `inventDimId` | No | Dimension ID |
 | `InventTransId` | String (20) | `ProdBOM` | `InventTransId` | Yes | Transaction ID |
 | `InventRefType` | Enum | `ProdBOM` | `InventRefType` | No | Reference type |
 | `InventRefId` | String (20) | `ProdBOM` | `InventRefId` | No | Reference ID |
-| `dataAreaId` | String (4) | `ProdBOM` | `dataAreaId` | Yes | Company ID |
 
 ## Query Filters
 
@@ -98,9 +98,15 @@ The following fields are custom extensions and must be verified to exist in your
 - **Public**: Yes
 - **Allow Edit**: No (Read-only entity)
 - **Data Management Enabled**: Yes
+- **Data Management Staging Table**: TSI_ProdBOMLinesStaging
 - **OData Enabled**: Yes
-- **Primary Key**: ProdId, LineNum, InventTransId, dataAreaId
-- **Primary Index**: ProdId, LineNum, dataAreaId
+- **Is Read Only**: Yes
+- **Primary Key**: EntityKey (InventTransId, LineNum, ProdId)
+- **Primary Company Context**: DataAreaId
+- **Configuration Key**: Prod
+- **Label**: @TSI:ProductionBOMLines
+- **Public Collection Name**: TSI_ProdBOMLines
+- **Public Entity Name**: TSI_ProdBOMLine
 
 ## Security
 
@@ -138,33 +144,33 @@ CREATE INDEX IX_InventDim_InventDimId
 ## OData Endpoint
 
 ```
-GET /data/TSI_ProdBomLines?$filter=dataAreaId eq '500'
+GET /data/TSI_ProdBOMLines
 ```
 
 ### Example Query - Get BOM Lines for Production Order
 ```
-GET /data/TSI_ProdBomLines?$filter=dataAreaId eq '500' and ProdId eq '000123'
+GET /data/TSI_ProdBOMLines?$filter=ProdId eq '000123'
 ```
 
 ### Example Query - Get BOM Lines Sorted by Position
 ```
-GET /data/TSI_ProdBomLines?$filter=dataAreaId eq '500' and ProdId eq '000123'&$orderby=Position,LineNum
+GET /data/TSI_ProdBOMLines?$filter=ProdId eq '000123'&$orderby=Position,LineNum
 ```
 
 ### Example Query - Get BOM Lines for Specific Component
 ```
-GET /data/TSI_ProdBomLines?$filter=dataAreaId eq '500' and ItemId eq 'FOAM-001'
+GET /data/TSI_ProdBOMLines?$filter=ItemId eq 'FOAM-001'
 ```
 
 ### Example Query - Get BOM Lines with Location Info
 ```
-GET /data/TSI_ProdBomLines?$filter=dataAreaId eq '500' and ProdId eq '000123'&$select=ItemId,ItemName,BOMQty,UnitId,InventLocationId,WMSLocationId
+GET /data/TSI_ProdBOMLines?$filter=ProdId eq '000123'&$select=ItemId,ItemName,BOMQty,UnitId,InventLocationId,wMSLocationId
 ```
 
 ## TypeScript Interface
 
 ```typescript
-export interface TSI_ProdBomLine {
+export interface TSI_ProdBOMLine {
   ProdId: string;
   ItemId: string;
   LineNum: number;
@@ -182,12 +188,11 @@ export interface TSI_ProdBomLine {
   TSIShorteningLength: number;
   TSIBlockWidth: number;
   InventLocationId: string;
-  WMSLocationId: string;
-  InventDimId: string;
+  wMSLocationId: string;
+  inventDimId: string;
   InventTransId: string;
   InventRefType: number;
   InventRefId: string;
-  dataAreaId: string;
 }
 ```
 
@@ -231,27 +236,25 @@ SELECT
     pb.INVENTDIMID,
     pb.INVENTTRANSID,
     pb.INVENTREFTYPE,
-    pb.INVENTREFID,
-    pb.DATAAREAID
+    pb.INVENTREFID
 FROM ProdBOM pb
 INNER JOIN InventTable it
     ON pb.ITEMID = it.ITEMID
-    AND pb.DATAAREAID = it.DATAAREAID
 INNER JOIN EcoResProduct p
     ON it.PRODUCT = p.RECID
+LEFT JOIN EcoResProductSystemLanguage psl
+    ON p.RECID = psl.PRODUCT
 LEFT JOIN EcoResProductTranslation pt
     ON p.RECID = pt.PRODUCT
-    AND pt.LANGUAGEID = 'en-us'
+    AND psl.LanguageId = pt.SystemLanguageId
 LEFT JOIN InventItemGroupItem iig
     ON it.ITEMID = iig.ITEMID
     AND it.DATAAREAID = iig.ITEMDATAAREAID
 LEFT JOIN TSIInventTable tsi
-    ON it.ITEMID = tsi.ITEMID
-    AND it.DATAAREAID = tsi.DATAAREAID
+    ON it.ITEMID = tsi.TSIITEMID
 INNER JOIN InventDim id
     ON pb.INVENTDIMID = id.INVENTDIMID
-WHERE pb.DATAAREAID = '500'
-  AND pb.PRODID = '000123'
+WHERE pb.PRODID = '000123'
 ORDER BY pb.POSITION, pb.LINENUM
 ```
 
