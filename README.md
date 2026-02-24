@@ -53,11 +53,12 @@ MES Integration API examples:
 - ✅ End production order
 
 ### 4. **OData.Samples**
-OData endpoint examples for reference data:
-- ✅ Query production orders
-- ✅ Retrieve BOM information
-- ✅ Access routing data
-- ✅ Product master data
+OData endpoint examples for TSI custom entities and warehouse operations:
+- ✅ Query TSI production jobs
+- ✅ Retrieve TSI BOM lines
+- ✅ Access TSI items and labels
+- ✅ Query warehouse work lines
+- ✅ Retrieve item batches
 
 ### 5. **ServiceBusEvents.Samples**
 Azure Service Bus event consumer for D365 business events:
@@ -154,7 +155,7 @@ These samples demonstrate common scenarios for memory foam bed manufacturing:
 2. **Material Consumption** - Report raw material usage during assembly
 3. **Production Reporting** - Track completed units and work-in-progress
 4. **Production Order Management** - Start, track, and complete production orders
-5. **Reference Data Queries** - Retrieve production orders, BOMs, and routing information
+5. **Reference Data Queries** - Retrieve TSI production jobs, BOM lines, items, and warehouse operations
 6. **Event-Driven Integration** - React to D365 production order events via Service Bus
 7. **Filtered OData Queries** - Query specific records efficiently using OData filters with event data
 
