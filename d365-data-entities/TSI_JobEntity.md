@@ -17,47 +17,42 @@
 - **Join Condition**: `ProdTable.ProdId == JmgJobTable.ModuleRefId`
 - Job details and operations
 
-### 3. ProdRouteJob
-- **Join Type**: Outer Join
-- **Join Condition**: `JmgJobTable.JobId == ProdRouteJob.JobId`
-- Production route jobs
-
-### 4. InventDim
+### 3. InventDim
 - **Join Type**: Inner Join
 - **Join Condition**: `ProdTable.InventDimId == InventDim.InventDimId`
 - Inventory dimensions (batch, config, etc.)
 
-### 5. TSIProdTable
+### 4. TSIProdTable
 - **Join Type**: Inner Join
 - **Join Condition**: `ProdTable.ProdId == TSIProdTable.TSIProdId`
 - Custom production table extensions
 
-### 6. InventTable
+### 5. InventTable
 - **Join Type**: Inner Join
 - **Join Condition**: `ProdTable.ItemId == InventTable.ItemId`
 - Item master data
 
-### 7. EcoResProductSystemLanguage
+### 6. EcoResProductSystemLanguage
 - **Join Type**: Outer Join
 - **Join Condition**: `InventTable.Product == EcoResProductSystemLanguage.Product`
 - Product system language
 
-### 8. EcoResProductTranslation
+### 7. EcoResProductTranslation
 - **Join Type**: Outer Join
 - **Join Condition**: `InventTable.Product == EcoResProductTranslation.Product AND EcoResProductSystemLanguage.LanguageId == EcoResProductTranslation.SystemLanguageId`
 - Product translations for item names
 
-### 9. TSIInventTable
+### 8. TSIInventTable
 - **Join Type**: Outer Join
 - **Join Condition**: `InventTable.ItemId == TSIInventTable.TSIItemId`
 - Custom inventory table extensions
 
-### 10. WHSInventTable
+### 9. WHSInventTable
 - **Join Type**: Outer Join
 - **Join Condition**: `InventTable.ItemId == WHSInventTable.ItemId`
 - Warehouse inventory table
 
-### 11. WHSUOMSeqGroupLine
+### 10. WHSUOMSeqGroupLine
 - **Join Type**: Outer Join
 - **Join Condition**: `WHSInventTable.UOMSeqGroupId == WHSUOMSeqGroupLine.UOMSeqGroupId`
 - **Filter**: `WHSUOMSeqGroupLine.LineNum == 3`
@@ -71,7 +66,7 @@
 | `ProdId` | String (20) | `ProdTable` | `ProdId` | Yes | Production order ID |
 | `ModuleRefId` | String (20) | `JmgJobTable` | `ModuleRefId` | No | Production order reference |
 | `ItemId` | String (20) | `InventTable` | `ItemId` | Yes | Item identifier |
-| `JobId` | String (20) | `ProdRouteJob` | `JobId` | No | Job identifier |
+| `JobId` | String (20) | `JmgJobTable` | `JobId` | No | Job identifier |
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | Yes | Item name |
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias |
 | `DlvDateProd` | Date | `ProdTable` | `DlvDate` | No | Production delivery date |
@@ -155,7 +150,6 @@ The following fields are custom extensions and must be verified to exist in your
 ### Privileges Required
 - Read access to `ProdTable`
 - Read access to `JmgJobTable`
-- Read access to `ProdRouteJob`
 - Read access to `InventTable`
 - Read access to `InventDim`
 - Read access to `EcoResProductTranslation`
@@ -173,10 +167,6 @@ CREATE INDEX IX_ProdTable_ProdId_DataArea
 CREATE INDEX IX_JmgJobTable_ModuleRefId
   ON JmgJobTable(ModuleRefId)
   INCLUDE (JobId, OprNum);
-
--- On ProdRouteJob
-CREATE INDEX IX_ProdRouteJob_JobId
-  ON ProdRouteJob(JobId);
 ```
 
 ## OData Endpoint
@@ -268,7 +258,6 @@ export interface TSI_Job {
 SELECT pt.ProdId, pt.ItemId, jt.JobId, jt.OprNum
 FROM ProdTable pt
 LEFT OUTER JOIN JmgJobTable jt ON pt.ProdId = jt.ModuleRefId
-LEFT OUTER JOIN ProdRouteJob prj ON jt.JobId = prj.JobId
 WHERE pt.DataAreaId = '500'
 ```
 
@@ -279,11 +268,10 @@ SELECT
   pt.ProdId,
   jt.ModuleRefId,
   it.ItemId,
-  prj.JobId,
+  jt.JobId,
   et.Name AS ItemName
 FROM ProdTable pt
 LEFT OUTER JOIN JmgJobTable jt ON pt.ProdId = jt.ModuleRefId
-LEFT OUTER JOIN ProdRouteJob prj ON jt.JobId = prj.JobId
 INNER JOIN InventTable it ON pt.ItemId = it.ItemId
 LEFT OUTER JOIN EcoResProductTranslation et ON it.Product = et.Product
 WHERE pt.DataAreaId = '500'
