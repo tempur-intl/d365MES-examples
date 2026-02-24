@@ -1,15 +1,23 @@
 {
-  "productionOrders": {
-    "filter": "ProductionOrderStatus eq Microsoft.Dynamics.DataEntities.ProdStatus'Released'",
+  "tsiItems": {
+    "itemId": "PILLOW-001"
+  },
+  "tsiProdBomLines": {
+    "prodId": "000123"
+  },
+  "tsiLabels": {
+    "prodId": "PROD-001234",
+    "udiUnit": "x1"
+  },
+  "tsiJobs": {
+    "prodId": "000123"
+  },
+  "warehouseWorkLines": {
+    "filter": "dataAreaId eq '500' and WarehouseWorkStatus eq Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open'",
     "top": 10
   },
-  "product": {
-    "productNumber": "83107273"
-  },
-  "bom": {
-    "productionOrderNumber": "10001147"
-  },
-  "route": {
-    "productionOrderNumber": "10001147"
+  "itemBatches": {
+    "filter": "dataAreaId eq '500' and BatchDispositionCode eq 'QUARANTINE'",
+    "top": 10
   }
 }

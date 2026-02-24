@@ -37,7 +37,11 @@ public class IntegratedService
         _httpClient = httpClient;
         _logger = logger;
 
-        _serviceBusClient = new ServiceBusClient(_serviceBusConfig.ConnectionString);
+        _serviceBusClient = new ServiceBusClient(_serviceBusConfig.ConnectionString,
+            new ServiceBusClientOptions
+            {
+                TransportType = ServiceBusTransportType.AmqpWebSockets
+            });
         _receiver = _serviceBusClient.CreateReceiver(
             _serviceBusConfig.TopicName,
             _serviceBusConfig.SubscriptionName,
@@ -56,21 +60,17 @@ public class IntegratedService
     /// </summary>
     public async Task ProcessEventsAsync(int maxMessages = 10, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Receiving up to {MaxMessages} messages from Service Bus...", maxMessages);
-
         var messages = await _receiver.ReceiveMessagesAsync(
             maxMessages,
             TimeSpan.FromSeconds(_serviceBusConfig.MaxWaitTimeSeconds),
             cancellationToken);
 
-        _logger.LogInformation("Received {Count} messages", messages.Count);
+        int mesMessageCount = 0;
 
         foreach (var message in messages)
         {
             try
             {
-                _logger.LogInformation("\n=== Processing Message {MessageId} ===", message.MessageId);
-
                 // Step 1: Parse the business event
                 var businessEvent = ParseBusinessEvent(message);
                 if (businessEvent == null)
@@ -80,6 +80,16 @@ public class IntegratedService
                     continue;
                 }
 
+                // Only process TSI Production Order Released to MES events
+                if (businessEvent.BusinessEventId != "TSIProductionOrderReleasedToMESBusinessEvent")
+                {
+                    await _receiver.CompleteMessageAsync(message, cancellationToken);
+                    continue;
+                }
+
+                mesMessageCount++;
+
+                _logger.LogInformation("\n=== Processing Message {MessageId} ===", message.MessageId);
                 _logger.LogInformation("Business Event Received:");
                 var eventJson = JsonSerializer.Serialize(businessEvent, _jsonOptions);
                 Console.WriteLine(eventJson);
@@ -89,21 +99,18 @@ public class IntegratedService
                 _logger.LogInformation("Production Order: {OrderNumber}", businessEvent.ProductionOrderNumber);
                 _logger.LogInformation("Resource: {Resource}", businessEvent.Resource);
 
-                // Step 2: Query production order details using OData
-                var productionOrder = await GetProductionOrderAsync(
-                    businessEvent.ProductionOrderNumber!,
-                    cancellationToken);
+                // Step 2: Query job details using OData (ProdId = ProductionOrderNumber in D365)
+                var prodId = businessEvent.ProductionOrderNumber!;
+                var jobs = await GetJobsAsync(prodId, cancellationToken);
 
-                if (productionOrder != null)
+                if (jobs.Any())
                 {
-                    _logger.LogInformation("Production Order Details:");
-                    var productionOrderJson = JsonSerializer.Serialize(productionOrder, _jsonOptions);
-                    Console.WriteLine(productionOrderJson);
+                    _logger.LogInformation("Job Details ({Count} jobs):", jobs.Count);
+                    var jobsJson = JsonSerializer.Serialize(jobs, _jsonOptions);
+                    Console.WriteLine(jobsJson);
 
                     // Step 3: Query BOM lines
-                    var bomLines = await GetBomLinesAsync(
-                        businessEvent.ProductionOrderNumber!,
-                        cancellationToken);
+                    var bomLines = await GetBomLinesAsync(prodId, cancellationToken);
 
                     _logger.LogInformation("\nBOM Lines ({Count} materials):", bomLines.Count);
                     var bomLinesJson = JsonSerializer.Serialize(bomLines, _jsonOptions);
@@ -111,7 +118,7 @@ public class IntegratedService
                 }
                 else
                 {
-                    _logger.LogWarning("Production order {OrderNumber} not found in D365",
+                    _logger.LogWarning("No jobs found for production order {OrderNumber}",
                         businessEvent.ProductionOrderNumber);
                 }
 
@@ -144,6 +151,8 @@ public class IntegratedService
                 }
             }
         }
+
+        _logger.LogInformation("Processed {Count} TSIProductionOrderReleasedToMESBusinessEvent messages", mesMessageCount);
     }
 
     private BusinessEventEnvelope? ParseBusinessEvent(ServiceBusReceivedMessage message)
@@ -165,16 +174,16 @@ public class IntegratedService
         }
     }
 
-    private async Task<ProductionOrder?> GetProductionOrderAsync(
-        string productionOrderNumber,
+    private async Task<List<TSI_Job>> GetJobsAsync(
+        string prodId,
         CancellationToken cancellationToken)
     {
         try
         {
             var token = await _tokenProvider.GetD365TokenAsync(cancellationToken);
 
-            var filter = $"ProductionOrderNumber eq '{productionOrderNumber}' and dataAreaId eq '{_d365Config.OrganizationId}'";
-            var url = $"{_d365Config.BaseUrl}{ODataEndpoint}/ProductionOrderHeaders?$filter={Uri.EscapeDataString(filter)}&$top=1";
+            var filter = $"ProdId eq '{prodId}' and dataAreaId eq '{_d365Config.OrganizationId}'";
+            var url = $"{_d365Config.BaseUrl}{ODataEndpoint}/TSI_Jobs?$filter={Uri.EscapeDataString(filter)}";
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -186,31 +195,31 @@ public class IntegratedService
             {
                 var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
                 _logger.LogError("OData query failed: {Error}", errorContent);
-                return null;
+                return new List<TSI_Job>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<ODataResponse<ProductionOrder>>(
+            var result = await response.Content.ReadFromJsonAsync<ODataResponse<TSI_Job>>(
                 cancellationToken: cancellationToken);
 
-            return result?.Value.FirstOrDefault();
+            return result?.Value ?? new List<TSI_Job>();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error querying production order");
-            return null;
+            _logger.LogError(ex, "Error querying jobs");
+            return new List<TSI_Job>();
         }
     }
 
-    private async Task<List<BomLine>> GetBomLinesAsync(
-        string productionOrderNumber,
+    private async Task<List<TSI_ProdBOMLine>> GetBomLinesAsync(
+        string prodId,
         CancellationToken cancellationToken)
     {
         try
         {
             var token = await _tokenProvider.GetD365TokenAsync(cancellationToken);
 
-            var filter = $"ProductionOrderNumber eq '{productionOrderNumber}' and dataAreaId eq '{_d365Config.OrganizationId}'";
-            var url = $"{_d365Config.BaseUrl}{ODataEndpoint}/ProductionOrderBillOfMaterialLines?$filter={Uri.EscapeDataString(filter)}";
+            var filter = $"ProdId eq '{prodId}' and dataAreaId eq '{_d365Config.OrganizationId}'";
+            var url = $"{_d365Config.BaseUrl}{ODataEndpoint}/TSI_ProdBOMLines?$filter={Uri.EscapeDataString(filter)}";
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -220,18 +229,20 @@ public class IntegratedService
 
             if (!response.IsSuccessStatusCode)
             {
-                return new List<BomLine>();
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogError("OData query failed: {Error}", errorContent);
+                return new List<TSI_ProdBOMLine>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<ODataResponse<BomLine>>(
+            var result = await response.Content.ReadFromJsonAsync<ODataResponse<TSI_ProdBOMLine>>(
                 cancellationToken: cancellationToken);
 
-            return result?.Value ?? new List<BomLine>();
+            return result?.Value ?? new List<TSI_ProdBOMLine>();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error querying BOM lines");
-            return new List<BomLine>();
+            return new List<TSI_ProdBOMLine>();
         }
     }
 

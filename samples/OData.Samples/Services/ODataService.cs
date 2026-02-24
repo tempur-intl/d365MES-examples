@@ -35,6 +35,7 @@ public class ODataService
         string entityPath,
         string? filter = null,
         string? select = null,
+        string? expand = null,
         int? top = null,
         CancellationToken cancellationToken = default)
     {
@@ -45,6 +46,8 @@ public class ODataService
             queryParams.Add($"$filter={Uri.EscapeDataString(filter)}");
         if (!string.IsNullOrWhiteSpace(select))
             queryParams.Add($"$select={select}");
+        if (!string.IsNullOrWhiteSpace(expand))
+            queryParams.Add($"$expand={expand}");
         if (top.HasValue)
             queryParams.Add($"$top={top.Value}");
 
@@ -59,14 +62,169 @@ public class ODataService
     }
 
     /// <summary>
-    /// Query production orders
+    /// Get TSI items
     /// </summary>
-    public async Task<List<ProductionOrder>> GetProductionOrdersAsync(
+    public async Task<List<TSI_Item>> GetTsiItemsAsync(
+        string? itemId = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Querying TSI items");
+
+        var filter = itemId != null
+            ? $"ItemId eq '{itemId}'"
+            : null;
+
+        using var request = await CreateAuthenticatedRequestAsync(
+            HttpMethod.Get,
+            "TSI_Items",
+            filter: filter,
+            top: itemId != null ? 1 : null,
+            cancellationToken: cancellationToken);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Failed to query TSI items: {Error}", errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<TSI_Item>>(
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Retrieved {Count} TSI items", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<TSI_Item>();
+    }
+
+    /// <summary>
+    /// Get TSI production BOM lines
+    /// </summary>
+    public async Task<List<TSI_ProdBOMLine>> GetTsiProdBomLinesAsync(
+        string? prodId = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Querying TSI production BOM lines");
+
+        var filter = prodId != null
+            ? $"ProdId eq '{prodId}'"
+            : null;
+
+        using var request = await CreateAuthenticatedRequestAsync(
+            HttpMethod.Get,
+            "TSI_ProdBOMLines",
+            filter: filter,
+            cancellationToken: cancellationToken);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Failed to query TSI production BOM lines: {Error}", errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<TSI_ProdBOMLine>>(
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Retrieved {Count} TSI production BOM lines", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<TSI_ProdBOMLine>();
+    }
+
+    /// <summary>
+    /// Get TSI labels
+    /// </summary>
+    public async Task<List<TSI_Label>> GetTsiLabelsAsync(
+        string? prodId = null,
+        string? udiUnit = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Querying TSI labels");
+
+        // Build filter dynamically
+        var filterParts = new List<string> { $"dataAreaId eq '{_config.OrganizationId}'" };
+
+        if (!string.IsNullOrWhiteSpace(prodId))
+        {
+            filterParts.Add($"ProdId eq '{prodId}'");
+        }
+
+        if (!string.IsNullOrWhiteSpace(udiUnit))
+        {
+            filterParts.Add($"(UDIUnit eq '{udiUnit}' or HasUDI eq 0)");
+        }
+
+        var filter = string.Join(" and ", filterParts);
+
+        using var request = await CreateAuthenticatedRequestAsync(
+            HttpMethod.Get,
+            "TSI_Labels",
+            filter: filter,
+            select: "ProdId,ItemId,InventDimId,EntityKey,LabelSalesOrder,LabelEAN_Code,LabelMadeIn,LabelDateWeek,UDIUnit,HasUDI",
+            expand: "Logos",
+            cancellationToken: cancellationToken);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Failed to query TSI labels: {Error}", errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<TSI_Label>>(
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Retrieved {Count} TSI labels", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<TSI_Label>();
+    }
+
+    /// <summary>
+    /// Get TSI jobs
+    /// </summary>
+    public async Task<List<TSI_Job>> GetTsiJobsAsync(
+        string? prodId = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Querying TSI jobs");
+
+        var filter = prodId != null
+            ? $"ProdId eq '{prodId}' and dataAreaId eq '{_config.OrganizationId}'"
+            : $"dataAreaId eq '{_config.OrganizationId}'";
+
+        using var request = await CreateAuthenticatedRequestAsync(
+            HttpMethod.Get,
+            "TSI_Jobs",
+            filter: filter,
+            cancellationToken: cancellationToken);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Failed to query TSI jobs: {Error}", errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<TSI_Job>>(
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Retrieved {Count} TSI jobs", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<TSI_Job>();
+    }
+
+    /// <summary>
+    /// Get warehouse work lines
+    /// </summary>
+    public async Task<List<WarehouseWorkLines>> GetWarehouseWorkLinesAsync(
         string? filter = null,
         int? top = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Querying production orders");
+        _logger.LogInformation("Querying warehouse work lines");
 
         // Add dataAreaId filter
         var fullFilter = string.IsNullOrWhiteSpace(filter)
@@ -75,7 +233,7 @@ public class ODataService
 
         using var request = await CreateAuthenticatedRequestAsync(
             HttpMethod.Get,
-            "ProductionOrderHeaders",
+            "WarehouseWorkLines",
             filter: fullFilter,
             top: top,
             cancellationToken: cancellationToken);
@@ -85,32 +243,37 @@ public class ODataService
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogError("Failed to query production orders: {Error}", errorContent);
+            _logger.LogError("Failed to query warehouse work lines: {Error}", errorContent);
             response.EnsureSuccessStatusCode();
         }
 
-        var result = await response.Content.ReadFromJsonAsync<ODataResponse<ProductionOrder>>(
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<WarehouseWorkLines>>(
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Retrieved {Count} production orders", result?.Value.Count ?? 0);
-        return result?.Value ?? new List<ProductionOrder>();
+        _logger.LogInformation("Retrieved {Count} warehouse work lines", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<WarehouseWorkLines>();
     }
 
     /// <summary>
-    /// Get BOM lines for a specific BOM
+    /// Get item batches
     /// </summary>
-    public async Task<List<BomLine>> GetBomLinesAsync(
-        string productionOrderNumber,
+    public async Task<List<ItemBatches>> GetItemBatchesAsync(
+        string? filter = null,
+        int? top = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Querying BOM lines for production order: {OrderNumber}", productionOrderNumber);
+        _logger.LogInformation("Querying item batches");
 
-        var filter = $"dataAreaId eq '{_config.OrganizationId}' and ProductionOrderNumber eq '{productionOrderNumber}'";
+        // Add dataAreaId filter
+        var fullFilter = string.IsNullOrWhiteSpace(filter)
+            ? $"dataAreaId eq '{_config.OrganizationId}'"
+            : $"{filter} and dataAreaId eq '{_config.OrganizationId}'";
 
         using var request = await CreateAuthenticatedRequestAsync(
             HttpMethod.Get,
-            "ProductionOrderBillOfMaterialLines",
-            filter: filter,
+            "ItemBatches",
+            filter: fullFilter,
+            top: top,
             cancellationToken: cancellationToken);
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
@@ -118,87 +281,14 @@ public class ODataService
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogError("Failed to query BOM lines: {Error}", errorContent);
+            _logger.LogError("Failed to query item batches: {Error}", errorContent);
             response.EnsureSuccessStatusCode();
         }
 
-        var result = await response.Content.ReadFromJsonAsync<ODataResponse<BomLine>>(
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<ItemBatches>>(
             cancellationToken: cancellationToken);
 
-        _logger.LogInformation("Retrieved {Count} BOM lines", result?.Value?.Count ?? 0);
-        return result?.Value ?? new List<BomLine>();
+        _logger.LogInformation("Retrieved {Count} item batches", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<ItemBatches>();
     }
-
-    /// <summary>
-    /// Get route operations for a specific route
-    /// </summary>
-    public async Task<List<RouteOperation>> GetRouteOperationsAsync(
-        string productionOrderNumber,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Querying route operations for production order: {OrderNumber}", productionOrderNumber);
-
-        var filter = $"dataAreaId eq '{_config.OrganizationId}' and ProductionOrderNumber eq '{productionOrderNumber}'";
-
-        using var request = await CreateAuthenticatedRequestAsync(
-            HttpMethod.Get,
-            "ProductionOrderRouteOperations",
-            filter: filter,
-            cancellationToken: cancellationToken);
-
-        var response = await _httpClient.SendAsync(request, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogError("Failed to query route operations: {Error}", errorContent);
-            response.EnsureSuccessStatusCode();
-        }
-
-        var result = await response.Content.ReadFromJsonAsync<ODataResponse<RouteOperation>>(
-            cancellationToken: cancellationToken);
-
-        _logger.LogInformation("Retrieved {Count} route operations", result?.Value.Count ?? 0);
-        return result?.Value ?? new List<RouteOperation>();
-    }
-
-    /// <summary>
-    /// Get released product information
-    /// </summary>
-    public async Task<ReleasedProduct?> GetProductAsync(
-        string productNumber,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Querying product: {ProductNumber}", productNumber);
-
-        var filter = $"ProductNumber eq '{productNumber}' and dataAreaId eq '{_config.OrganizationId}'";
-
-        using var request = await CreateAuthenticatedRequestAsync(
-            HttpMethod.Get,
-            "ReleasedProductsV2",
-            filter: filter,
-            top: 1,
-            cancellationToken: cancellationToken);
-
-        var response = await _httpClient.SendAsync(request, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogError("Failed to query product: {Error}", errorContent);
-            response.EnsureSuccessStatusCode();
-        }
-
-        var result = await response.Content.ReadFromJsonAsync<ODataResponse<ReleasedProduct>>(
-            cancellationToken: cancellationToken);
-
-        var product = result?.Value.FirstOrDefault();
-        if (product != null)
-        {
-            _logger.LogInformation("Found product: {ProductName}", product.ProductName);
-        }
-
-        return product;
-    }
-
 }

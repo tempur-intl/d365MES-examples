@@ -4,13 +4,14 @@ This project demonstrates how to query reference data from Dynamics 365 Supply C
 
 ## 📋 Overview
 
-D365 exposes extensive data through OData v4 endpoints. This sample demonstrates querying:
+D365 exposes extensive data through OData v4 endpoints. This sample demonstrates querying TSI custom entities for MES integration:
 
-- ✅ Production orders
-- ✅ Released products (item master data)
-- ✅ Bill of Materials (BOM) lines
-- ✅ Route operations
-- ✅ Inventory on-hand
+- ✅ TSI Items (MES item master)
+- ✅ TSI Production BOM Lines (MES BOM data)
+- ✅ TSI Labels (MES label printing with logos)
+- ✅ TSI Jobs (MES production jobs)
+- ✅ Warehouse Work Lines (warehouse operations)
+- ✅ Item Batches (batch tracking and quarantine)
 
 ## 🔐 Authentication
 
@@ -54,6 +55,19 @@ Edit `sample-queries.json` with your actual data identifiers:
   },
   "route": {
     "productionOrderNumber": "10001147"
+  },
+  "tsiItems": {
+    "itemId": "PILLOW-001"
+  },
+  "tsiProdBomLines": {
+    "prodId": "000123"
+  },
+  "tsiLabels": {
+    "prodId": "PROD-001234",
+    "udiUnit": "x1"
+  },
+  "tsiJobs": {
+    "prodId": "000123"
   }
 }
 ```
@@ -74,80 +88,113 @@ dotnet run
 
 ## 📝 Sample Queries
 
-### 1. Query Production Orders
+### 1. Query TSI Items
 
 ```csharp
-// Query parameters loaded from sample-queries.json
-var orders = await odataService.GetProductionOrdersAsync(
-    filter: sampleQueries.ProductionOrders.Filter,
-    top: sampleQueries.ProductionOrders.Top);
+var items = await odataService.GetTsiItemsAsync(sampleQueries.TsiItems.ItemId);
 
-foreach (var order in orders)
+foreach (var item in items)
 {
-    Console.WriteLine($"Order: {order.ProductionOrderNumber}");
-    Console.WriteLine($"  Item: {order.ItemNumber}");
-    Console.WriteLine($"  Qty: {order.ProductionOrderQuantity}");
-    Console.WriteLine($"  Status: {order.ProductionOrderStatus}");
+    Console.WriteLine($"Item: {item.ItemId} - {item.ItemName}");
+    Console.WriteLine($"  Group: {item.ItemGroupId}");
+    Console.WriteLine($"  BOM Unit: {item.BOMUnitId}");
 }
 ```
 
-**Use Case**: Display active production orders in MES system dashboard.
+**Use Case**: Load item master data into MES system.
 
-### 2. Query Product Information
-
-```csharp
-var product = await odataService.GetProductAsync("83107273");
-
-Console.WriteLine($"Product: {product.ProductName}");
-Console.WriteLine($"  Inventory Unit: {product.InventoryUnitSymbol}");
-Console.WriteLine($"  BOM Unit: {product.BomUnitSymbol}");
-```
-
-**Use Case**: Show product details when selecting items in MES interface.
-
-### 3. Query BOM Lines
+### 2. Query TSI Production BOM Lines
 
 ```csharp
-var bomLines = await odataService.GetBomLinesAsync("BOM-83107273");
+var bomLines = await odataService.GetTsiProdBomLinesAsync(sampleQueries.TsiProdBomLines.ProdId);
 
 foreach (var line in bomLines)
 {
-    Console.WriteLine($"Line {line.LineNumber}: {line.ItemNumber}");
-    Console.WriteLine($"  Quantity: {line.BomQuantity} {line.BomUnitSymbol}");
+    Console.WriteLine($"BOM Line: {line.ItemId} - {line.ItemName}");
+    Console.WriteLine($"  Quantity: {line.BOMQty} {line.UnitId}");
+    Console.WriteLine($"  Location: {line.InventLocationId}");
 }
 ```
 
-**Use Case**: Display required materials for production order in MES.
+**Use Case**: Get detailed BOM information with inventory locations for MES material tracking.
 
-### 4. Query Route Operations
+### 3. Query TSI Labels
 
 ```csharp
-var operations = await odataService.GetRouteOperationsAsync("ROUTE-MATTRESS");
+var labels = await odataService.GetTsiLabelsAsync(
+    prodId: sampleQueries.TsiLabels.ProdId,
+    udiUnit: sampleQueries.TsiLabels.UDIUnit);
 
-foreach (var op in operations)
+foreach (var label in labels)
 {
-    Console.WriteLine($"Op {op.OperationNumber}: {op.OperationId}");
-    Console.WriteLine($"  Process Time: {op.ProcessTime} min");
-    Console.WriteLine($"  Setup Time: {op.SetupTime} min");
+    Console.WriteLine($"Label: {label.ProdId} - {label.ItemId}");
+    Console.WriteLine($"  EAN: {label.LabelEAN_Code}");
+    Console.WriteLine($"  UDI: {label.HasUDI} ({label.UDIUnit})");
+    if (label.Logos != null)
+    {
+        Console.WriteLine($"  Logos: {label.Logos.Count}");
+        foreach (var logo in label.Logos)
+        {
+            Console.WriteLine($"    - {logo.TSILogoId}: {logo.TSILogoPath} (pos: {logo.TSILogoPosition})");
+        }
+    }
 }
 ```
 
-**Use Case**: Load operation sequences and time standards into MES.
+**Use Case**: Retrieve label printing data with EAN/UDI codes and automatically expanded logo information for MES label printing.
 
-### 5. Query Inventory On-Hand
+### 4. Query TSI Jobs
 
 ```csharp
-var inventory = await odataService.GetInventoryOnHandAsync("FoamSheet-QK", "1");
+var jobs = await odataService.GetTsiJobsAsync(sampleQueries.TsiJobs.ProdId);
 
-foreach (var entry in inventory)
+foreach (var job in jobs)
 {
-    Console.WriteLine($"Warehouse: {entry.InventoryWarehouseId}");
-    Console.WriteLine($"  Available: {entry.AvailablePhysicalInventoryQuantity}");
-    Console.WriteLine($"  Total: {entry.TotalAvailableInventoryQuantity}");
+    Console.WriteLine($"Job: {job.JobId} - {job.ItemId}");
+    Console.WriteLine($"  Work Center: {job.WrkCtrId}");
+    Console.WriteLine($"  Consumption: {job.ItemNameConsumption}");
 }
 ```
 
-**Use Case**: Check material availability before starting production.
+**Use Case**: Load production job details for MES work instructions and tracking.
+
+### 5. Query Warehouse Work Lines
+
+```csharp
+var workLines = await odataService.GetWarehouseWorkLinesAsync(
+    filter: sampleQueries.WarehouseWorkLines.Filter,
+    top: sampleQueries.WarehouseWorkLines.Top);
+
+foreach (var line in workLines)
+{
+    Console.WriteLine($"Work: {line.WorkId} - Line {line.LineNumber}");
+    Console.WriteLine($"  Item: {line.ItemNumber}");
+    Console.WriteLine($"  Quantity: {line.WorkQuantity}");
+    Console.WriteLine($"  Location: {line.WMSLocationId}");
+    Console.WriteLine($"  Status: {line.WarehouseWorkStatus}");
+}
+```
+
+**Use Case**: Monitor warehouse operations and work progress in MES system.
+
+### 6. Query Item Batches
+
+```csharp
+var batches = await odataService.GetItemBatchesAsync(
+    filter: sampleQueries.ItemBatches.Filter,
+    top: sampleQueries.ItemBatches.Top);
+
+foreach (var batch in batches)
+{
+    Console.WriteLine($"Batch: {batch.ItemNumber} - {batch.BatchNumber}");
+    Console.WriteLine($"  Disposition: {batch.BatchDispositionCode}");
+    Console.WriteLine($"  Manufacturing Date: {batch.ManufacturingDate}");
+    Console.WriteLine($"  Expiration Date: {batch.BatchExpirationDate}");
+    Console.WriteLine($"  Quantity: {batch.PhysicalInventoryQuantity}");
+}
+```
+
+**Use Case**: Track batch information and quarantine status for quality control in MES.
 
 ## 🔍 OData Query Syntax
 
@@ -203,6 +250,10 @@ Verify materials exist before allowing material consumption entry.
 | `ProductionOrderLines` | Production order components |
 | `WorkCalendarTables` | Shop calendar |
 | `InventoryDimensions` | Batch/serial numbers |
+| `TSI_Items` | MES item master data |
+| `TSI_ProdBOMLines` | MES production BOM with locations |
+| `TSI_Labels` | MES label printing data (with Logos navigation) |
+| `TSI_Jobs` | MES production jobs |
 
 ## 🛠️ Best Practices
 
@@ -273,3 +324,7 @@ For memory foam bed manufacturing, focus on:
 - **InventoryOnHandEntries** - Stock availability
 - **ProdBOMJournalLines** - Material consumption history
 - **ProdRouteCardJournalLines** - Labor/time reporting history
+- **TSI_Items** - MES-optimized item master data
+- **TSI_ProdBOMLines** - MES BOM data with warehouse locations
+- **TSI_Labels** - Label printing data with EAN/UDI codes (includes expanded Logos navigation)
+- **TSI_Jobs** - Production job details for MES tracking

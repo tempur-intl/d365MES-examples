@@ -4,8 +4,8 @@ This sample demonstrates a complete event-driven integration workflow combining 
 
 1. **Receive** a `TSIProductionOrderReleasedToMESBusinessEvent` from Azure Service Bus
 2. **Extract** the `ProductionOrderNumber` and `Resource` from the event
-3. **Query** D365 OData API to get full production order details using a filtered request
-4. **Retrieve** related BOM lines for material requirements
+3. **Query** D365 OData API to get job details using TSI_Jobs entity
+4. **Retrieve** related BOM lines using TSI_ProdBOMLines entity
 
 ## 📋 Prerequisites
 
@@ -78,21 +78,21 @@ The service parses the event and extracts `ProductionOrderNumber: 10001191`.
 
 ### 3. Query OData with Filter
 
-The service makes an OData request with a filter:
+The service makes OData requests with filters:
 
 ```http
-GET /data/ProductionOrderHeaders?$filter=ProductionOrderNumber eq '10001191' and dataAreaId eq '500'&$top=1
+GET /data/TSI_Jobs?$filter=ProdId eq '10001191' and dataAreaId eq '500'
 Authorization: Bearer {token}
 ```
 
-**Key Point**: The `$filter` parameter demonstrates how to query for a specific production order rather than retrieving all orders.
+**Key Point**: The service uses `ProdId` (which equals `ProductionOrderNumber` in D365) to query job details.
 
 ### 4. Get Related Data
 
 The service also queries BOM lines with a filter:
 
 ```http
-GET /data/ProductionOrderBillOfMaterialLines?$filter=ProductionOrderNumber eq '10001191' and dataAreaId eq '500'
+GET /data/TSI_ProdBOMLines?$filter=ProdId eq '10001191' and dataAreaId eq '500'
 Authorization: Bearer {token}
 ```
 
@@ -106,19 +106,17 @@ The service logs all details and marks the Service Bus message as complete.
 === Processing Message 4eba91037fcbf011bbd37c1e52617b2f ===
 Event: ProductionOrderReleasedBusinessEvent for Production Order: 10001191
 
-Production Order Details:
-  - Item: 83107273
-  - Status: Released
-  - Site: 01, Warehouse: 010
-  - Quantity: 24
-  - Start: 2025-12-19, End: 2025-12-22
-  - BOM Lines: 11 materials required
-    • 19503: 24 p1
-    • 44173: 24 p1
-    • 35357: 24 p1
-    • 49001: 3.34 kg
-    • 14903: 4 p1
-    ... and 6 more
+Job Details (2 jobs):
+  - Job J0001: Item 83107273 at Work Center WC001
+  - Job J0002: Item 83107273 at Work Center WC002
+
+BOM Lines (11 materials):
+  • 19503: 24 p1
+  • 44173: 24 p1
+  • 35357: 24 p1
+  • 49001: 3.34 kg
+  • 14903: 4 p1
+  ... and 6 more
 
 ✓ Message processed successfully
 ```
@@ -128,10 +126,9 @@ Production Order Details:
 This pattern demonstrates:
 
 1. **Event-Driven Architecture**: React to D365 events in real-time
-2. **Filtered OData Queries**: Efficiently query for specific records instead of retrieving large datasets
-3. **Separation of Concerns**: Service Bus for events, OData for detailed data
-4. **Complete Context**: Event provides trigger, OData provides full details
-5. **Material Visibility**: Immediately see what materials are needed when an order is released
+2. **MES-Optimized Queries**: Use TSI entities designed specifically for MES integration
+3. **Job-Level Details**: Get detailed job information for production scheduling
+4. **Material Visibility**: Immediately see what materials are needed when an order is released
 
 ## 🔍 OData Filtering
 
@@ -158,10 +155,10 @@ This is much more efficient than:
 
 This integration pattern is ideal for:
 
-1. **MES Systems**: Receive release event → Query BOM → Schedule production
-2. **Warehouse Systems**: Receive release event → Query BOM → Stage materials
-3. **Planning Systems**: Receive release event → Query details → Update schedule
-4. **Analytics**: Receive release event → Query data → Update dashboards
+1. **MES Systems**: Receive release event → Query jobs → Schedule production operations
+2. **Work Center Systems**: Receive release event → Query jobs → Assign work to specific machines
+3. **Labor Tracking**: Receive release event → Query jobs → Track time and progress
+4. **Quality Systems**: Receive release event → Query jobs → Schedule inspections
 
 ## 🔗 Related Samples
 

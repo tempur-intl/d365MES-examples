@@ -14,7 +14,7 @@ class Program
     static async Task Main(string[] args)
     {
         // Build configuration
-        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -65,10 +65,12 @@ class Program
             var odataService = serviceProvider.GetRequiredService<ODataService>();
 
             // Run samples
-            await RunProductionOrderQuerySample(odataService, sampleQueries, logger);
-            await RunProductQuerySample(odataService, sampleQueries, logger);
-            await RunBomQuerySample(odataService, sampleQueries, logger);
-            await RunRouteQuerySample(odataService, sampleQueries, logger);
+            await RunTsiItemQuerySample(odataService, sampleQueries, logger);
+            await RunTsiProdBomLinesQuerySample(odataService, sampleQueries, logger);
+            await RunTsiLabelQuerySample(odataService, sampleQueries, logger);
+            await RunTsiJobQuerySample(odataService, sampleQueries, logger);
+            await RunWarehouseWorkLinesQuerySample(odataService, sampleQueries, logger);
+            await RunItemBatchesQuerySample(odataService, sampleQueries, logger);
 
             logger.LogInformation("\n=== All OData query samples completed successfully ===");
         }
@@ -78,47 +80,70 @@ class Program
         }
     }
 
-    static async Task RunProductionOrderQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    static async Task RunTsiItemQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 1: Query Production Orders ---");
+        logger.LogInformation("\n--- Sample 1: Query TSI Items ---");
 
-        var orders = await odataService.GetProductionOrdersAsync(
-            filter: sampleQueries.ProductionOrders.Filter,
-            top: sampleQueries.ProductionOrders.Top);
+        var items = await odataService.GetTsiItemsAsync(sampleQueries.TsiItems.ItemId);
 
-        var json = JsonSerializer.Serialize(orders, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true });
         Console.WriteLine(json);
     }
 
-    static async Task RunProductQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    static async Task RunTsiProdBomLinesQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 2: Query Product Information ---");
+        logger.LogInformation("\n--- Sample 2: Query TSI Production BOM Lines ---");
 
-        var product = await odataService.GetProductAsync(sampleQueries.Product.ProductNumber);
-
-        var json = JsonSerializer.Serialize(product, new JsonSerializerOptions { WriteIndented = true });
-        Console.WriteLine(json);
-    }
-
-    static async Task RunBomQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
-    {
-        logger.LogInformation("\n--- Sample 3: Query BOM Lines ---");
-
-        var bomLines = await odataService.GetBomLinesAsync(sampleQueries.Bom.ProductionOrderNumber);
+        var bomLines = await odataService.GetTsiProdBomLinesAsync(sampleQueries.TsiProdBomLines.ProdId);
 
         var json = JsonSerializer.Serialize(bomLines, new JsonSerializerOptions { WriteIndented = true });
         Console.WriteLine(json);
     }
 
-    static async Task RunRouteQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    static async Task RunTsiLabelQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 4: Query Route Operations ---");
+        logger.LogInformation("\n--- Sample 3: Query TSI Labels ---");
 
-        var operations = await odataService.GetRouteOperationsAsync(sampleQueries.Route.ProductionOrderNumber);
+        var labels = await odataService.GetTsiLabelsAsync(
+            prodId: sampleQueries.TsiLabels.ProdId,
+            udiUnit: sampleQueries.TsiLabels.UDIUnit);
 
-        var json = JsonSerializer.Serialize(operations, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(labels, new JsonSerializerOptions { WriteIndented = true });
         Console.WriteLine(json);
     }
 
+    static async Task RunTsiJobQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 4: Query TSI Jobs ---");
+
+        var jobs = await odataService.GetTsiJobsAsync(sampleQueries.TsiJobs.ProdId);
+
+        var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
+        Console.WriteLine(json);
+    }
+
+    static async Task RunWarehouseWorkLinesQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 5: Query Warehouse Work Lines ---");
+
+        var workLines = await odataService.GetWarehouseWorkLinesAsync(
+            filter: sampleQueries.WarehouseWorkLines.Filter,
+            top: sampleQueries.WarehouseWorkLines.Top);
+
+        var json = JsonSerializer.Serialize(workLines, new JsonSerializerOptions { WriteIndented = true });
+        Console.WriteLine(json);
+    }
+
+    static async Task RunItemBatchesQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 6: Query Item Batches ---");
+
+        var batches = await odataService.GetItemBatchesAsync(
+            filter: sampleQueries.ItemBatches.Filter,
+            top: sampleQueries.ItemBatches.Top);
+
+        var json = JsonSerializer.Serialize(batches, new JsonSerializerOptions { WriteIndented = true });
+        Console.WriteLine(json);
+    }
 
 }

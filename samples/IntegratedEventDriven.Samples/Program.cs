@@ -12,13 +12,26 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
+
         // Build configuration
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json", optional: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
             .Build();
 
-        // Setup dependency injection
+        // Get configuration sections with validation
+        var azureAdConfig = configuration.GetSection("AzureAd").Get<AzureAdConfig>();
+        var d365Config = configuration.GetSection("D365").Get<D365Config>();
+        var serviceBusConfig = configuration.GetSection("ServiceBus").Get<ServiceBusConfig>();
+
+        if (azureAdConfig == null || d365Config == null || serviceBusConfig == null)
+        {
+            Console.WriteLine("ERROR: Missing required configuration sections.");
+            Console.WriteLine("Please copy appsettings.Example.json to appsettings.Development.json and configure with your values.");
+            Environment.Exit(1);
+        }
+
         var serviceProvider = new ServiceCollection()
             .AddHttpClient()
             .AddLogging(builder =>
@@ -26,9 +39,9 @@ class Program
                 builder.AddConfiguration(configuration.GetSection("Logging"));
                 builder.AddConsole();
             })
-            .AddSingleton(configuration.GetSection("AzureAd").Get<AzureAdConfig>()!)
-            .AddSingleton(configuration.GetSection("D365").Get<D365Config>()!)
-            .AddSingleton(configuration.GetSection("ServiceBus").Get<ServiceBusConfig>()!)
+            .AddSingleton(azureAdConfig)
+            .AddSingleton(d365Config)
+            .AddSingleton(serviceBusConfig)
             .AddScoped<AzureAdTokenProvider>()
             .AddScoped<D365TokenProvider>()
             .AddScoped<IntegratedService>()
