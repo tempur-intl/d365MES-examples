@@ -5,6 +5,7 @@
 **Entity Name**: `TSI_JobEntity`
 **Purpose**: Production job data for MES system integration
 **Primary Use**: Job information for production orders with MES integration
+**Filtering**: Jobs are filtered to Priority = Primary and Type = Process to include work center information.
 
 ## Data Sources
 
@@ -15,6 +16,7 @@
 ### 2. JmgJobTable
 - **Join Type**: Outer Join
 - **Join Condition**: `ProdTable.ProdId == JmgJobTable.ModuleRefId`
+- **Ranges**: `Priority = Primary` and `Type = Process`
 - Job details and operations
 
 ### 3. InventDim
@@ -71,7 +73,6 @@
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias |
 | `DlvDateProd` | Date | `ProdTable` | `DlvDate` | No | Production delivery date |
 | `OprNum` | String (10) | `JmgJobTable` | `OprNum` | No | Operation number |
-| `InventBatchId` | String (20) | `InventDim` | `InventBatchId` | No | Batch identifier |
 | `Height` | Real | `InventTable` | `Height` | No | Item height |
 | `Width` | Real | `InventTable` | `Width` | No | Item width |
 | `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
@@ -110,7 +111,7 @@ Retrieves concatenated notes from the DocuRef table associated with the job reco
 - Filters by RefCompanyId = dataAreaId and RefTableId = JmgJobTable table ID
 - Orders by CreatedDateTime and concatenates Notes fields
 
-No specific query ranges are applied at the entity level. Data is filtered based on the joined data sources.
+A query range is applied at the entity level to filter jobs with JobStatus = Started. Additional filtering is based on the joined data sources.
 
 ## Custom Fields Verification Required
 
@@ -241,7 +242,7 @@ export interface TSI_Job {
 - [ ] Create entity in D365
 - [ ] Add all data sources with proper join types
 - [ ] Configure join conditions
-- [ ] Add query range filter (JobActive = 1)
+- [ ] Add query range filters (Priority = Primary and Type = Process) on JmgJobTable
 - [ ] Map all fields from source tables
 - [ ] Set entity properties (Public, OData enabled, etc.)
 - [ ] Build and synchronize
