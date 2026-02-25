@@ -10,6 +10,7 @@ The D365 MES Integration API enables third-party MES systems to communicate prod
 - ✅ Reporting material consumption (picking lists)
 - ✅ Reporting production as finished
 - ✅ Ending production orders
+- ✅ Ending production orders
 
 ## 📚 Documentation
 
@@ -56,7 +57,6 @@ Edit `sample-data.json` with your actual production order data:
   "routeCardJournalNameId": "Route",
   "postNow": "Yes",
   "endPickingList": "No",
-  "endRouteCard": "No",
   "materialConsumption": [
     {
       "itemNumber": "20821",
@@ -73,28 +73,6 @@ Edit `sample-data.json` with your actual production order data:
   "reportAsFinished": {
     "itemNumber": "83107273",
     "reportedGoodQuantity": 50,
-    "reportedErrorQuantity": 0,
-    "productionSiteId": "01",
-    "productionWarehouseId": "010",
-    "productionWarehouseLocationId": "Aisle01-Rack01-Shelf01",
-    "automaticBOMConsumptionRule": "FlushingPrincip",
-    "automaticRouteConsumptionRule": "Always",
-    "pickingListJournalNameId": "Pick",
-    "routeCardJournalNameId": "Route",
-    "journalNameId": "RAF",
-    "licensePlateNumber": "LP-2024-001",
-    "itemBatchNumber": "FINISHED-001",
-    "productSerialNumber": "SN-2024-001",
-    "endJob": "Yes",
-    "endPickingList": "Yes",
-    "endRouteCard": "Yes",
-    "acceptError": "No",
-    "generateLicensePlate": "Yes",
-    "printLabel": "Yes",
-    "reportAsFinishedDate": "2024-01-15",
-    "executedDateTime": "2024-01-15T14:30:00Z"
-  }
-  }
 }
 ```
 
