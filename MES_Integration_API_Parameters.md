@@ -100,9 +100,9 @@ All MES Integration API messages follow this envelope structure:
 | `ToOperationNumber` | Integer | Optional | (blank) |
 | `InventoryLotId` | String | Optional | N/A |
 | `BaseValue` | String | Optional | N/A |
-| `EndJob` | Enum (Yes \| No) | Optional | Yes |
-| `EndPickingList` | Enum (Yes \| No) | Optional | Yes |
-| `EndRouteCard` | Enum (Yes \| No) | Optional | Yes |
+| `EndJob` | Enum (Yes \| No) | Optional | No |
+| `EndPickingList` | Enum (Yes \| No) | Optional | No |
+| `EndRouteCard` | Enum (Yes \| No) | Optional | No |
 | `PostNow` | Enum (Yes \| No) | Optional | N/A |
 | `AutoUpdate` | Enum (Yes \| No) | Optional | N/A |
 | `ProductColorId` | String | Optional | N/A |
