@@ -22,9 +22,6 @@ public class SampleDataConfig
     [JsonPropertyName("materialConsumption")]
     public List<MaterialConsumptionData> MaterialConsumption { get; set; } = new();
 
-    [JsonPropertyName("timeConsumption")]
-    public List<TimeConsumptionData> TimeConsumption { get; set; } = new();
-
     [JsonPropertyName("reportAsFinished")]
     public ReportAsFinishedData ReportAsFinished { get; set; } = new();
 }
@@ -45,27 +42,6 @@ public class MaterialConsumptionData
 
     [JsonPropertyName("productionWarehouseId")]
     public string ProductionWarehouseId { get; set; } = string.Empty;
-}
-
-public class TimeConsumptionData
-{
-    [JsonPropertyName("operationNumber")]
-    public int OperationNumber { get; set; }
-
-    [JsonPropertyName("hours")]
-    public decimal Hours { get; set; }
-
-    [JsonPropertyName("goodQuantity")]
-    public decimal GoodQuantity { get; set; }
-
-    [JsonPropertyName("errorQuantity")]
-    public decimal ErrorQuantity { get; set; }
-
-    [JsonPropertyName("operationsResourceId")]
-    public string OperationsResourceId { get; set; } = string.Empty;
-
-    [JsonPropertyName("worker")]
-    public string Worker { get; set; } = string.Empty;
 }
 
 public class ReportAsFinishedData
@@ -450,87 +426,6 @@ public class PickingListLine
 
     [JsonPropertyName("InventoryDimension12")]
     public string? InventoryDimension12 { get; set; }
-}
-
-/// <summary>
-/// Message to report time consumed (route card)
-/// </summary>
-public class RouteCardMessage
-{
-    [JsonPropertyName("ProductionOrderNumber")]
-    public required string ProductionOrderNumber { get; set; }
-
-    [JsonPropertyName("RouteCardLines")]
-    public List<RouteCardLine> RouteCardLines { get; set; } = new();
-
-    [JsonPropertyName("JournalNameId")]
-    public string? JournalNameId { get; set; }
-}
-
-public class RouteCardLine
-{
-    [JsonPropertyName("OperationNumber")]
-    public required int OperationNumber { get; set; }
-
-    [JsonPropertyName("OperationPriority")]
-    public string? OperationPriority { get; set; }
-
-    [JsonPropertyName("OperationId")]
-    public string? OperationId { get; set; }
-
-    [JsonPropertyName("OperationsResourceId")]
-    public string? OperationsResourceId { get; set; }
-
-    [JsonPropertyName("Worker")]
-    public string? Worker { get; set; }
-
-    [JsonPropertyName("HoursRouteCostCategoryId")]
-    public string? HoursRouteCostCategoryId { get; set; }
-
-    [JsonPropertyName("QuantityRouteCostCategoryId")]
-    public string? QuantityRouteCostCategoryId { get; set; }
-
-    [JsonPropertyName("HourlyRate")]
-    public decimal? HourlyRate { get; set; }
-
-    [JsonPropertyName("Hours")]
-    public decimal? Hours { get; set; }
-
-    [JsonPropertyName("GoodQuantity")]
-    public decimal? GoodQuantity { get; set; }
-
-    [JsonPropertyName("ErrorQuantity")]
-    public decimal? ErrorQuantity { get; set; }
-
-    [JsonPropertyName("CatchWeightGoodQuantity")]
-    public decimal? CatchWeightGoodQuantity { get; set; }
-
-    [JsonPropertyName("CatchWeightErrorQuantity")]
-    public decimal? CatchWeightErrorQuantity { get; set; }
-
-    [JsonPropertyName("QuantityPrice")]
-    public decimal? QuantityPrice { get; set; }
-
-    [JsonPropertyName("ProcessingPercentage")]
-    public decimal? ProcessingPercentage { get; set; }
-
-    [JsonPropertyName("ConsumptionDate")]
-    public string? ConsumptionDate { get; set; }
-
-    [JsonPropertyName("TaskType")]
-    public string? TaskType { get; set; }
-
-    [JsonPropertyName("ErrorCause")]
-    public string? ErrorCause { get; set; }
-
-    [JsonPropertyName("OperationCompleted")]
-    public string? OperationCompleted { get; set; }
-
-    [JsonPropertyName("BOMConsumption")]
-    public string? BOMConsumption { get; set; }
-
-    [JsonPropertyName("ReportAsFinished")]
-    public string? ReportAsFinished { get; set; }
 }
 
 /// <summary>

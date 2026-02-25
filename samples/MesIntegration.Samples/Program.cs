@@ -68,8 +68,6 @@ class Program
             // Simulate a complete production order lifecycle using data from JSON
             await RunStartProductionOrderSample(mesService, sampleData, logger);
             await RunMaterialConsumptionSample(mesService, sampleData, logger);
-            // We currently do not use time consumption reporting in our MES processes
-            // await RunTimeConsumptionSample(mesService, sampleData, logger);
             await RunReportAsFinishedSample(mesService, sampleData, logger);
             await RunEndProductionOrderSample(mesService, sampleData, logger);
 
@@ -126,39 +124,12 @@ class Program
         logger.LogInformation("Material consumption reported for {OrderNumber}", sampleData.ProductionOrderNumber);
     }
 
-    // We currently do not use time consumption reporting in our MES processes
-    // static async Task RunTimeConsumptionSample(
-    //     MesService mesService,
-    //     SampleDataConfig sampleData,
-    //     ILogger logger)
-    // {
-    //     logger.LogInformation("\n--- Sample 3: Report Time Consumption ---");
-
-    //     var message = new RouteCardMessage
-    //     {
-    //         ProductionOrderNumber = sampleData.ProductionOrderNumber,
-    //         RouteCardLines = sampleData.TimeConsumption.Select(t => new RouteCardLine
-    //         {
-    //             OperationNumber = t.OperationNumber,
-    //             Hours = t.Hours,
-    //             GoodQuantity = t.GoodQuantity,
-    //             ErrorQuantity = t.ErrorQuantity,
-    //             ConsumptionDate = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-    //             OperationsResourceId = t.OperationsResourceId,
-    //             Worker = t.Worker
-    //         }).ToList()
-    //     };
-
-    //     await mesService.ReportTimeConsumptionAsync(message);
-    //     logger.LogInformation("Time consumption reported for {OrderNumber}", sampleData.ProductionOrderNumber);
-    // }
-
     static async Task RunReportAsFinishedSample(
         MesService mesService,
         SampleDataConfig sampleData,
         ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 4: Report As Finished ---");
+        logger.LogInformation("\n--- Sample 3: Report As Finished ---");
 
         var message = new ReportAsFinishedMessage
         {
@@ -193,7 +164,7 @@ class Program
         SampleDataConfig sampleData,
         ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 5: End Production Order ---");
+        logger.LogInformation("\n--- Sample 4: End Production Order ---");
 
         var message = new EndProductionOrderMessage
         {

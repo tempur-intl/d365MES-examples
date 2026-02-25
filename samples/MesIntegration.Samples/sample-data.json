@@ -1,8 +1,13 @@
 {
   "productionOrderNumber": "10001147",
   "startedQuantity": 1,
-  "automaticBOMConsumptionRule": "FlushingPrincip",
-  "automaticRouteConsumptionRule": "Always",
+  "automaticBOMConsumptionRule": "Never",
+  "automaticRouteConsumptionRule": "Never",
+  "pickingListJournalNameId": "Pick",
+  "routeCardJournalNameId": "Route",
+  "postNow": "Yes",
+  "endPickingList": "No",
+  "endRouteCard": "No",
   "materialConsumption": [
     {
       "itemNumber": "20821",
@@ -10,7 +15,10 @@
       "consumptionBOMQuantityUnit": "p1",
       "operationNumber": 10,
       "productionSiteId": "01",
-      "productionWarehouseId": "010"
+      "productionWarehouseId": "010",
+      "consumptionDate": "2024-01-15",
+      "itemBatchNumber": "BATCH001",
+      "inventoryLotId": "LOT001"
     },
     {
       "itemNumber": "20697",
@@ -18,20 +26,34 @@
       "consumptionBOMQuantityUnit": "p1",
       "operationNumber": 10,
       "productionSiteId": "01",
-      "productionWarehouseId": "010"
+      "productionWarehouseId": "010",
+      "consumptionDate": "2024-01-15",
+      "itemBatchNumber": "BATCH002",
+      "inventoryLotId": "LOT002"
     }
   ],
   "reportAsFinished": {
     "itemNumber": "83107273",
-    "reportedGoodQuantity": 1,
+    "reportedGoodQuantity": 50,
     "reportedErrorQuantity": 0,
     "productionSiteId": "01",
     "productionWarehouseId": "010",
+    "productionWarehouseLocationId": "Aisle01-Rack01-Shelf01",
     "automaticBOMConsumptionRule": "FlushingPrincip",
     "automaticRouteConsumptionRule": "Always",
-    "licensePlateNumber": "go-test",
-    "endJob": "No",
+    "pickingListJournalNameId": "Pick",
+    "routeCardJournalNameId": "Route",
+    "journalNameId": "RAF",
+    "licensePlateNumber": "LP-2024-001",
+    "itemBatchNumber": "FINISHED-001",
+    "productSerialNumber": "SN-2024-001",
+    "endJob": "Yes",
+    "endPickingList": "Yes",
+    "endRouteCard": "Yes",
+    "acceptError": "No",
     "generateLicensePlate": "Yes",
-    "printLabel": "Yes"
+    "printLabel": "Yes",
+    "reportAsFinishedDate": "2024-01-15",
+    "executedDateTime": "2024-01-15T14:30:00Z"
   }
 }

@@ -8,9 +8,14 @@ The D365 MES Integration API enables third-party MES systems to communicate prod
 
 - ✅ Starting production orders
 - ✅ Reporting material consumption (picking lists)
-- ✅ Reporting time consumption (route cards)
 - ✅ Reporting production as finished
 - ✅ Ending production orders
+
+## 📚 Documentation
+
+For detailed parameter mappings and API reference, see:
+- [MES Integration API Parameters Documentation](../../d365-data-entities/MES_Integration_API_Parameters.md)
+- [Microsoft MES Integration Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
 
 ## 🔐 Authentication
 
@@ -45,28 +50,50 @@ Edit `sample-data.json` with your actual production order data:
 {
   "productionOrderNumber": "10001147",
   "startedQuantity": 1,
-  "automaticBOMConsumptionRule": "FlushingPrincip",
-  "automaticRouteConsumptionRule": "Always",
+  "automaticBOMConsumptionRule": "Never",
+  "automaticRouteConsumptionRule": "Never",
+  "pickingListJournalNameId": "Pick",
+  "routeCardJournalNameId": "Route",
+  "postNow": "Yes",
+  "endPickingList": "No",
+  "endRouteCard": "No",
   "materialConsumption": [
     {
       "itemNumber": "20821",
       "consumptionBOMQuantity": 2,
+      "consumptionBOMQuantityUnit": "p1",
       "operationNumber": 10,
       "productionSiteId": "01",
-      "productionWarehouseId": "010"
+      "productionWarehouseId": "010",
+      "consumptionDate": "2024-01-15",
+      "itemBatchNumber": "BATCH001",
+      "inventoryLotId": "LOT001"
     }
   ],
   "reportAsFinished": {
     "itemNumber": "83107273",
-    "reportedGoodQuantity": 1,
+    "reportedGoodQuantity": 50,
     "reportedErrorQuantity": 0,
     "productionSiteId": "01",
     "productionWarehouseId": "010",
+    "productionWarehouseLocationId": "Aisle01-Rack01-Shelf01",
     "automaticBOMConsumptionRule": "FlushingPrincip",
     "automaticRouteConsumptionRule": "Always",
-    "endJob": "No",
+    "pickingListJournalNameId": "Pick",
+    "routeCardJournalNameId": "Route",
+    "journalNameId": "RAF",
+    "licensePlateNumber": "LP-2024-001",
+    "itemBatchNumber": "FINISHED-001",
+    "productSerialNumber": "SN-2024-001",
+    "endJob": "Yes",
+    "endPickingList": "Yes",
+    "endRouteCard": "Yes",
+    "acceptError": "No",
     "generateLicensePlate": "Yes",
-    "printLabel": "Yes"
+    "printLabel": "Yes",
+    "reportAsFinishedDate": "2024-01-15",
+    "executedDateTime": "2024-01-15T14:30:00Z"
+  }
   }
 }
 ```
@@ -129,32 +156,7 @@ await mesService.ReportMaterialConsumptionAsync(message);
 
 **Use Case**: Track raw material (foam blocks, fabric) consumed during production operations.
 
-### 3. Report Time Consumption
-
-```csharp
-var message = new RouteCardMessage
-{
-    ProductionOrderNumber = "10001147",
-    RouteCardLines = new List<RouteCardLine>
-    {
-        new()
-        {
-            OperationNumber = 10,
-            Hours = 2.5m,
-            GoodQuantity = 100,
-            ErrorQuantity = 0,
-            OperationsResourceId = "CuttingMachine-01",
-            Worker = "Worker123"
-        }
-    }
-};
-
-await mesService.ReportTimeConsumptionAsync(message);
-```
-
-**Use Case**: Track labor hours and machine time for costing and scheduling.
-
-### 4. Report As Finished
+### 3. Report As Finished
 
 ```csharp
 var message = new ReportAsFinishedMessage
@@ -179,7 +181,7 @@ await mesService.ReportAsFinishedAsync(message);
 
 **Use Case**: Report completed units and scrap, move finished goods to warehouse.
 
-### 5. End Production Order
+### 4. End Production Order
 
 ```csharp
 var message = new EndProductionOrderMessage

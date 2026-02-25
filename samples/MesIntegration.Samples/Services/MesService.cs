@@ -127,19 +127,6 @@ public class MesService
     }
 
     /// <summary>
-    /// Report time consumed for operations (route card)
-    /// </summary>
-    public async Task ReportTimeConsumptionAsync(
-        RouteCardMessage message,
-        CancellationToken cancellationToken = default)
-    {
-        await SendMessageAsync(
-            "ProdProductionOrderRouteCard",
-            message,
-            cancellationToken);
-    }
-
-    /// <summary>
     /// End a production order
     /// </summary>
     public async Task EndProductionOrderAsync(
