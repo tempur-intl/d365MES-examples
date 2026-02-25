@@ -142,6 +142,7 @@ DOTNET_ENVIRONMENT=Development dotnet run
 
 ## 📚 Documentation
 
+- [MES Integration API Parameters](MES_Integration_API_Parameters.md) - Comprehensive parameter mapping for MES Integration API
 - [Inventory Visibility API Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/inventory-visibility-api)
 - [MES Integration Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
 - [D365 OData Documentation](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata)

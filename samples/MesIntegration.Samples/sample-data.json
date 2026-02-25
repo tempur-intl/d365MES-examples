@@ -1,6 +1,7 @@
 {
   "productionOrderNumber": "10001147",
-  "startedQuantity": 1,
+  "startedQuantity": 5,
+  "startedDate": "2024-01-15",
   "automaticBOMConsumptionRule": "Never",
   "automaticRouteConsumptionRule": "Never",
   "pickingListJournalNameId": "Pick",
@@ -34,8 +35,11 @@
   ],
   "reportAsFinished": {
     "itemNumber": "83107273",
-    "reportedGoodQuantity": 50,
+    "reportedGoodQuantity": 1,
     "reportedErrorQuantity": 0,
+    "errorCause": "",
+    "fromOperationNumber": 0,
+    "toOperationNumber": 0,
     "productionSiteId": "01",
     "productionWarehouseId": "010",
     "productionWarehouseLocationId": "Aisle01-Rack01-Shelf01",
