@@ -1,19 +1,19 @@
 {
   "tsiItems": {
-    "itemId": "PILLOW-001"
+    "itemId": "83110290"
   },
   "tsiProdBomLines": {
-    "prodId": "000123"
+    "prodId": "10002664"
   },
   "tsiLabels": {
-    "prodId": "PROD-001234",
+    "prodId": "10002664",
     "udiUnit": "x1"
   },
   "tsiJobs": {
-    "prodId": "000123"
+    "prodId": "10002664"
   },
   "warehouseWorkLines": {
-    "filter": "dataAreaId eq '500' and WarehouseWorkStatus eq Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open'",
+    "filter": "dataAreaId eq '500' and WarehouseWorkStatus eq Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open' and ItemNumber eq '83300244'",
     "top": 10
   },
   "itemBatches": {
