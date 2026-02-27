@@ -43,36 +43,31 @@ Edit `sample-queries.json` with your actual data identifiers:
 
 ```json
 {
-  "productionOrders": {
-    "filter": "ProductionOrderStatus eq Microsoft.Dynamics.DataEntities.ProdStatus'Released'",
-    "top": 10
-  },
-  "product": {
-    "productNumber": "83107273"
-  },
-  "bom": {
-    "productionOrderNumber": "10001147"
-  },
-  "route": {
-    "productionOrderNumber": "10001147"
-  },
   "tsiItems": {
-    "itemId": "PILLOW-001"
+    "itemId": "83110290"
   },
   "tsiProdBomLines": {
-    "prodId": "000123"
+    "prodId": "10002664"
   },
   "tsiLabels": {
-    "prodId": "PROD-001234",
+    "prodId": "10002664",
     "udiUnit": "x1"
   },
   "tsiJobs": {
-    "prodId": "000123"
+    "prodId": "10002664"
+  },
+  "warehouseWorkLines": {
+    "filter": "dataAreaId eq '500' and WarehouseWorkStatus eq Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open' and ItemNumber eq '83300244'",
+    "top": 10
+  },
+  "itemBatches": {
+    "filter": "dataAreaId eq '500' and BatchDispositionCode eq 'QUARANTINE'",
+    "top": 10
   }
 }
 ```
 
-**Note**: For production order status filters, use the enum format: `Microsoft.Dynamics.DataEntities.ProdStatus'StatusValue'` where StatusValue can be Released, Scheduled, StartedUp, ReportedFinished, Ended, etc.
+**Note**: For enum filters use the fully-qualified OData enum format, e.g. `Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open'`.
 
 **Benefits**:
 - ✅ Test queries against real data in your D365 environment
@@ -127,7 +122,7 @@ var labels = await odataService.GetTsiLabelsAsync(
 
 foreach (var label in labels)
 {
-    Console.WriteLine($"Label: {label.ProdId} - {label.ItemId}");
+    Console.WriteLine($"Label: {label.ProdId} - {label.LabelItemId}");
     Console.WriteLine($"  EAN: {label.LabelEAN_Code}");
     Console.WriteLine($"  UDI: {label.HasUDI} ({label.UDIUnit})");
     if (label.Logos != null)
@@ -202,23 +197,22 @@ foreach (var batch in batches)
 
 ```csharp
 // Single condition
-filter = "ProductionOrderStatus eq 'Scheduled'";
+filter = "dataAreaId eq '500'";
 
 // Multiple conditions (AND)
-filter = "ItemNumber eq 'A0001' and ProductionSiteId eq '1'";
+filter = "dataAreaId eq '500' and ItemNumber eq '83300244'";
 
-// Multiple conditions (OR)
-filter = "ProductionOrderStatus eq 'Scheduled' or ProductionOrderStatus eq 'Started'";
+// Enum value filter
+filter = "WarehouseWorkStatus eq Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open'";
 
 // Comparison operators
-filter = "ProductionOrderQuantity gt 100"; // greater than
-filter = "ScheduledStartDate ge 2024-01-01"; // greater than or equal
+filter = "WorkQuantity gt 10"; // greater than
 ```
 
 ### Selecting Fields
 
 ```csharp
-select = "ProductionOrderNumber,ItemNumber,ProductionOrderStatus";
+select = "WorkId,ItemNumber,WorkQuantity,WarehouseWorkStatus";
 ```
 
 ### Top N Results
@@ -242,18 +236,12 @@ Verify materials exist before allowing material consumption entry.
 
 | Entity | Use Case |
 |--------|----------|
-| `ProductionOrders` | Active production orders |
-| `ReleasedProducts` | Item master data |
-| `BOMLines` | Bill of materials |
-| `RouteOperations` | Production routing |
-| `InventoryOnHandEntries` | Available inventory |
-| `ProductionOrderLines` | Production order components |
-| `WorkCalendarTables` | Shop calendar |
-| `InventoryDimensions` | Batch/serial numbers |
 | `TSI_Items` | MES item master data |
-| `TSI_ProdBOMLines` | MES production BOM with locations |
-| `TSI_Labels` | MES label printing data (with Logos navigation) |
+| `TSI_ProdBOMLines` | MES production BOM with warehouse locations |
+| `TSI_Labels` | MES label printing data (includes expanded Logos navigation) |
 | `TSI_Jobs` | MES production jobs |
+| `WarehouseWorkLines` | Open warehouse work / pick operations |
+| `InventBatchTableV2` | Batch tracking and quarantine status |
 
 ## 🛠️ Best Practices
 
@@ -316,15 +304,9 @@ https://your-instance.operations.dynamics.com/data
 
 For memory foam bed manufacturing, focus on:
 
-- **ProductionOrders** - Order status and header info
-- **ProductionOrderLines** - BOM components for orders
-- **BOMLines** - Standard BOM definitions
-- **RouteOperations** - Manufacturing processes
-- **ReleasedProducts** - Item specifications
-- **InventoryOnHandEntries** - Stock availability
-- **ProdBOMJournalLines** - Material consumption history
-- **ProdRouteCardJournalLines** - Labor/time reporting history
 - **TSI_Items** - MES-optimized item master data
 - **TSI_ProdBOMLines** - MES BOM data with warehouse locations
 - **TSI_Labels** - Label printing data with EAN/UDI codes (includes expanded Logos navigation)
 - **TSI_Jobs** - Production job details for MES tracking
+- **WarehouseWorkLines** - Open warehouse work and pick operations
+- **InventBatchTableV2** - Batch disposition and quarantine tracking
