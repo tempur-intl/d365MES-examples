@@ -979,7 +979,7 @@ public class TSI_Item
     public string ItemGroupId { get; set; } = string.Empty;
 
     [JsonPropertyName("ABCValue")]
-    public int ABCValue { get; set; }
+    public string ABCValue { get; set; } = string.Empty;
 
     [JsonPropertyName("BOMUnitId")]
     public string BOMUnitId { get; set; } = string.Empty;
@@ -1009,7 +1009,7 @@ public class TSI_ProdBOMLine
     public string UnitId { get; set; } = string.Empty;
 
     [JsonPropertyName("Position")]
-    public int Position { get; set; }
+    public string Position { get; set; } = string.Empty;
 
     [JsonPropertyName("ScrapVar")]
     public decimal ScrapVar { get; set; }
@@ -1051,7 +1051,7 @@ public class TSI_ProdBOMLine
     public string InventTransId { get; set; } = string.Empty;
 
     [JsonPropertyName("InventRefType")]
-    public int InventRefType { get; set; }
+    public string InventRefType { get; set; } = string.Empty;
 
     [JsonPropertyName("InventRefId")]
     public string InventRefId { get; set; } = string.Empty;
@@ -1065,14 +1065,8 @@ public class TSI_Label
     [JsonPropertyName("ProdId")]
     public string ProdId { get; set; } = string.Empty;
 
-    [JsonPropertyName("ItemId")]
-    public string ItemId { get; set; } = string.Empty;
-
-    [JsonPropertyName("InventDimId")]
-    public string InventDimId { get; set; } = string.Empty;
-
-    [JsonPropertyName("EntityKey")]
-    public string EntityKey { get; set; } = string.Empty;
+    [JsonPropertyName("LabelItemId")]
+    public string LabelItemId { get; set; } = string.Empty;
 
     [JsonPropertyName("LabelSalesOrder")]
     public string LabelSalesOrder { get; set; } = string.Empty;
@@ -1090,7 +1084,7 @@ public class TSI_Label
     public string UDIUnit { get; set; } = string.Empty;
 
     [JsonPropertyName("HasUDI")]
-    public bool HasUDI { get; set; }
+    public int HasUDI { get; set; }
 
     [JsonPropertyName("Logos")]
     public List<TSI_LabelLogo>? Logos { get; set; }
@@ -1147,7 +1141,7 @@ public class TSI_Job
     public string DlvDateProd { get; set; } = string.Empty;
 
     [JsonPropertyName("OprNum")]
-    public string OprNum { get; set; } = string.Empty;
+    public int OprNum { get; set; }
 
     [JsonPropertyName("Height")]
     public decimal Height { get; set; }
@@ -1162,16 +1156,16 @@ public class TSI_Job
     public decimal BlockWidth { get; set; }
 
     [JsonPropertyName("JobType")]
-    public int JobType { get; set; }
+    public string JobType { get; set; } = string.Empty;
 
     [JsonPropertyName("JobStatus")]
-    public int JobStatus { get; set; }
+    public string JobStatus { get; set; } = string.Empty;
 
     [JsonPropertyName("WrkCtrId")]
     public string WrkCtrId { get; set; } = string.Empty;
 
     [JsonPropertyName("ProdPrioText")]
-    public string ProdPrioText { get; set; } = string.Empty;
+    public int ProdPrioText { get; set; }
 
     [JsonPropertyName("TSIPuljeID")]
     public int TSIPuljeID { get; set; }
@@ -1189,10 +1183,10 @@ public class TSI_Job
     public decimal TSIShorteningLength { get; set; }
 
     [JsonPropertyName("ProdStatus")]
-    public int ProdStatus { get; set; }
+    public string ProdStatus { get; set; } = string.Empty;
 
     [JsonPropertyName("TSIReadyForMes")]
-    public int TSIReadyForMes { get; set; }
+    public string TSIReadyForMes { get; set; } = string.Empty;
 
     [JsonPropertyName("dataAreaId")]
     public string DataAreaId { get; set; } = string.Empty;
@@ -1222,7 +1216,7 @@ public class WarehouseWorkLines
     public string WMSLocationId { get; set; } = string.Empty;
 
     [JsonPropertyName("WarehouseWorkStatus")]
-    public int WarehouseWorkStatus { get; set; }
+    public string WarehouseWorkStatus { get; set; } = string.Empty;
 
     [JsonPropertyName("LicensePlateNumber")]
     public string LicensePlateNumber { get; set; } = string.Empty;

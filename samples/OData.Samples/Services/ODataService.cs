@@ -161,7 +161,7 @@ public class ODataService
             HttpMethod.Get,
             "TSI_Labels",
             filter: filter,
-            select: "ProdId,ItemId,InventDimId,EntityKey,LabelSalesOrder,LabelEAN_Code,LabelMadeIn,LabelDateWeek,UDIUnit,HasUDI",
+            select: "ProdId,LabelItemId,LabelSalesOrder,LabelEAN_Code,LabelMadeIn,LabelDateWeek,UDIUnit,HasUDI",
             expand: "Logos",
             cancellationToken: cancellationToken);
 
