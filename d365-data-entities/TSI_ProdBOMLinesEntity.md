@@ -77,6 +77,7 @@
 | `InventTransId` | String (20) | `ProdBOM` | `InventTransId` | Yes | Transaction ID |
 | `InventRefType` | Enum | `ProdBOM` | `InventRefType` | No | Reference type |
 | `InventRefId` | String (20) | `ProdBOM` | `InventRefId` | No | Reference ID |
+| `ProdFlushingPrincip` | Enum | `ProdBOM` | `ProdFlushingPrincip` | No | Flushing principle for this BOM line (overrides item default) |
 
 ## Query Filters
 
@@ -193,6 +194,7 @@ export interface TSI_ProdBOMLine {
   InventTransId: string;
   InventRefType: number;
   InventRefId: string;
+  ProdFlushingPrincip: number;
 }
 ```
 
@@ -236,7 +238,8 @@ SELECT
     pb.INVENTDIMID,
     pb.INVENTTRANSID,
     pb.INVENTREFTYPE,
-    pb.INVENTREFID
+    pb.INVENTREFID,
+    pb.PRODFLUSHINGPRINCIP
 FROM ProdBOM pb
 INNER JOIN InventTable it
     ON pb.ITEMID = it.ITEMID

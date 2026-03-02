@@ -60,6 +60,10 @@
 - **Filter**: `WHSUOMSeqGroupLine.LineNum == 3`
 - Unit sequence group for pallet quantities (always Line 3)
 
+### 11. ProdRouteSchedulingView (via SQL subquery)
+- **Join Type**: Correlated subquery (not a data source join)
+- `WrkCtrId` is resolved by a `SysComputedColumn` SQL expression; see the Computed Fields section for details
+
 ## Field Mappings
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
@@ -73,6 +77,7 @@
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias |
 | `DlvDateProd` | Date | `ProdTable` | `DlvDate` | No | Production delivery date |
 | `OprNum` | String (10) | `JmgJobTable` | `OprNum` | No | Operation number |
+| `WrkCtrId` | String (20) | Computed | `resource()` | No | Work centre ID for the primary route operation (OprNum 10, OprPriority Primary) |
 | `Height` | Real | `InventTable` | `Height` | No | Item height |
 | `Width` | Real | `InventTable` | `Width` | No | Item width |
 | `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
@@ -99,6 +104,24 @@ Retrieves the first consumption item from the production BOM that is associated 
 - Looks for the BOM line with the lowest Position value
 - If no record is found with Position, falls back to the first line ordered by LineNum
 - Joins ProdBOM, InventTable, and EcoResProductTranslation
+
+### WrkCtrId
+Returns the work centre for operation 10 on the production order, implemented as a `SysComputedColumn` SQL expression.
+
+**Method**: `resource()` (static server)
+**Returns**: `WrkCtrId` from `ProdRouteSchedulingView`. Returns `NULL` if no matching route operation exists.
+
+**Logic**:
+```sql
+SELECT TOP 1 prs.WrkCtrId
+FROM ProdRouteSchedulingView prs
+WHERE prs.ProdId      = <JmgJobTable.ModuleRefId>
+  AND prs.OprNum      = 10
+  AND prs.OprPriority = 0  -- RouteOprPriority::Primary
+```
+- `ProdId` is sourced from `JmgJobTable.ModuleRefId` via `SysComputedColumn::returnField`
+- `OprNum` is hardcoded to `10`
+- `OprPriority` is hardcoded to `Primary` (`enum2int(RouteOprPriority::Primary)`)
 
 ### GreenHandNote
 Retrieves concatenated notes from the DocuRef table associated with the job record.
@@ -219,6 +242,7 @@ export interface TSI_Job {
   NameAlias?: string;
   DlvDateProd?: string;
   OprNum?: string;
+  WrkCtrId?: string;
   InventBatchId?: string;
   Height?: number;
   Width?: number;
