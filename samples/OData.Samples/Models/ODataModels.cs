@@ -150,12 +150,14 @@ public class ProductionOrder
     [JsonPropertyName("ScheduledStartDate")]
     public string? ScheduledStartDate { get; set; }
 
+    // D365 stores time-of-day values as seconds since midnight (range: 0–86399)
     [JsonPropertyName("ScheduledStartTime")]
     public int? ScheduledStartTime { get; set; }
 
     [JsonPropertyName("ScheduledEndDate")]
     public string? ScheduledEndDate { get; set; }
 
+    // D365 stores time-of-day values as seconds since midnight (range: 0–86399)
     [JsonPropertyName("ScheduledEndTime")]
     public int? ScheduledEndTime { get; set; }
 

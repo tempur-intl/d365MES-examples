@@ -39,7 +39,7 @@ public class D365DateTimeConverter : JsonConverter<DateTime>
                 throw new JsonException($"Unable to parse DateTime from string: {stringValue}");
 
             case JsonTokenType.Number:
-                // Handle numeric ticks
+                // D365 sends numeric timestamps as Unix milliseconds
                 var ticks = reader.GetInt64();
                 try
                 {
@@ -99,21 +99,15 @@ public class D365NullableDateTimeConverter : JsonConverter<DateTime?>
                 return null;
 
             case JsonTokenType.Number:
-                var ticks = reader.GetInt64();
+                // D365 sends numeric timestamps as Unix milliseconds — consistent with D365DateTimeConverter
+                var ms = reader.GetInt64();
                 try
                 {
-                    return new DateTime(ticks, DateTimeKind.Utc);
+                    return DateTimeOffset.FromUnixTimeMilliseconds(ms).DateTime;
                 }
                 catch
                 {
-                    try
-                    {
-                        return DateTimeOffset.FromUnixTimeSeconds(ticks).DateTime;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                    return null;
                 }
 
             default:
@@ -187,10 +181,9 @@ public class BusinessEventEnvelope
 }
 
 /// <summary>
-/// TSI Production Order Released to MES Business Event
-/// Fired when planning/production has finalized/scheduled an order and it is ready to be picked up by the MES system
+/// Base class for TSI MES business events, containing the envelope fields common to all TSI events.
 /// </summary>
-public class TSIProductionOrderReleasedToMESBusinessEvent
+public abstract class TSIBusinessEventBase
 {
     [JsonPropertyName("BusinessEventId")]
     public string? BusinessEventId { get; set; }
@@ -234,50 +227,23 @@ public class TSIProductionOrderReleasedToMESBusinessEvent
 }
 
 /// <summary>
-/// TSI Production Order Updated MES Event
-/// Fired when production order data has been updated (qty, etc.) and MES system should refresh its data
+/// Fired when a production order has been finalised/scheduled and is ready for the MES to pick up.
+/// The MES should fetch the full order data via OData on receipt of this event.
 /// </summary>
-public class TSIProductionOrderUpdatedMESEvent
+public class TSIProductionOrderReleasedToMESBusinessEvent : TSIBusinessEventBase
 {
-    [JsonPropertyName("BusinessEventId")]
-    public string? BusinessEventId { get; set; }
+    /// <summary>The D365 BusinessEventId value used to identify this event type.</summary>
+    public const string EventTypeId = "TSIProductionOrderReleasedToMESBusinessEvent";
+}
 
-    [JsonPropertyName("BusinessEventLegalEntity")]
-    public string? BusinessEventLegalEntity { get; set; }
-
-    [JsonPropertyName("ContextRecordSubject")]
-    public string? ContextRecordSubject { get; set; }
-
-    [JsonPropertyName("ControlNumber")]
-    public long ControlNumber { get; set; }
-
-    [JsonPropertyName("EventId")]
-    public string? EventId { get; set; }
-
-    [JsonPropertyName("EventTime")]
-    [JsonConverter(typeof(D365DateTimeConverter))]
-    public DateTime EventTime { get; set; }
-
-    [JsonPropertyName("EventTimeIso8601")]
-    public string? EventTimeIso8601 { get; set; }
-
-    [JsonPropertyName("InitiatingUserAADObjectId")]
-    public string? InitiatingUserAADObjectId { get; set; }
-
-    [JsonPropertyName("MajorVersion")]
-    public int MajorVersion { get; set; }
-
-    [JsonPropertyName("MinorVersion")]
-    public int MinorVersion { get; set; }
-
-    [JsonPropertyName("ParentContextRecordSubjects")]
-    public List<string> ParentContextRecordSubjects { get; set; } = new();
-
-    [JsonPropertyName("ProductionOrderNumber")]
-    public string? ProductionOrderNumber { get; set; }
-
-    [JsonPropertyName("Resource")]
-    public string? Resource { get; set; }
+/// <summary>
+/// Fired when a previously released production order has been updated (e.g. quantity or schedule change)
+/// and the MES should refresh its local copy of the order data.
+/// </summary>
+public class TSIProductionOrderUpdatedMESEvent : TSIBusinessEventBase
+{
+    /// <summary>The D365 BusinessEventId value used to identify this event type.</summary>
+    public const string EventTypeId = "TSIProductionOrderUpdatedMESEvent";
 }
 
 /// <summary>

@@ -112,16 +112,14 @@ public class StartProductionOrderMessage
     [JsonPropertyName("StartedDate")]
     public string? StartedDate { get; set; }
 
+    /// <summary>Valid values: <c>FlushingPrincip</c> | <c>Always</c> | <c>Never</c></summary>
     [JsonPropertyName("AutomaticBOMConsumptionRule")]
     public string? AutomaticBOMConsumptionRule { get; set; }
 
+    /// <summary>Valid values: <c>RouteDependent</c> | <c>Always</c> | <c>Never</c></summary>
     [JsonPropertyName("AutomaticRouteConsumptionRule")]
     public string? AutomaticRouteConsumptionRule { get; set; }
 }
-
-/// <summary>
-/// Message to report production as finished
-/// </summary>
 public class ReportAsFinishedMessage
 {
     [JsonPropertyName("ProductionOrderNumber")]
@@ -130,6 +128,7 @@ public class ReportAsFinishedMessage
     [JsonPropertyName("ReportFinishedLines")]
     public List<ReportFinishedLine> ReportFinishedLines { get; set; } = new();
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("PrintLabel")]
     public string? PrintLabel { get; set; }
 }
@@ -142,6 +141,7 @@ public class ReportFinishedLine
     [JsonPropertyName("ItemNumber")]
     public string? ItemNumber { get; set; }
 
+    /// <summary>Valid values: <c>MainItem</c> | <c>Formula</c> | <c>BOM</c> | <c>Co_Product</c> | <c>By_Product</c> | <c>None</c> (extensible)</summary>
     [JsonPropertyName("ProductionType")]
     public string? ProductionType { get; set; }
 
@@ -157,9 +157,11 @@ public class ReportFinishedLine
     [JsonPropertyName("ReportedGoodCatchWeightQuantity")]
     public decimal? ReportedGoodCatchWeightQuantity { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("AcceptError")]
     public string? AcceptError { get; set; }
 
+    /// <summary>Valid values: <c>None</c> | <c>Material</c> | <c>Machine</c> | <c>OperatingStaff</c> (extensible)</summary>
     [JsonPropertyName("ErrorCause")]
     public string? ErrorCause { get; set; }
 
@@ -169,12 +171,15 @@ public class ReportFinishedLine
     [JsonPropertyName("ReportAsFinishedDate")]
     public string? ReportAsFinishedDate { get; set; }
 
+    /// <summary>Valid values: <c>FlushingPrincip</c> | <c>Always</c> | <c>Never</c></summary>
     [JsonPropertyName("AutomaticBOMConsumptionRule")]
     public string? AutomaticBOMConsumptionRule { get; set; }
 
+    /// <summary>Valid values: <c>RouteDependent</c> | <c>Always</c> | <c>Never</c></summary>
     [JsonPropertyName("AutomaticRouteConsumptionRule")]
     public string? AutomaticRouteConsumptionRule { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("RespectFlushingPrincipleDuringOverproduction")]
     public string? RespectFlushingPrincipleDuringOverproduction { get; set; }
 
@@ -199,18 +204,23 @@ public class ReportFinishedLine
     [JsonPropertyName("BaseValue")]
     public string? BaseValue { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c>. Marks this as the final job for the order.</summary>
     [JsonPropertyName("EndJob")]
     public string? EndJob { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("EndPickingList")]
     public string? EndPickingList { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("EndRouteCard")]
     public string? EndRouteCard { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("PostNow")]
     public string? PostNow { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("AutoUpdate")]
     public string? AutoUpdate { get; set; }
 
@@ -235,6 +245,7 @@ public class ReportFinishedLine
     [JsonPropertyName("ProductSerialNumber")]
     public string? ProductSerialNumber { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("GenerateLicensePlate")]
     public string? GenerateLicensePlate { get; set; }
 
@@ -346,9 +357,11 @@ public class PickingListLine
     [JsonPropertyName("PositionNumber")]
     public string? PositionNumber { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("IsConsumptionEnded")]
     public string? IsConsumptionEnded { get; set; }
 
+    /// <summary>Valid values: <c>None</c> | <c>Material</c> | <c>Machine</c> | <c>OperatingStaff</c> (extensible)</summary>
     [JsonPropertyName("ErrorCause")]
     public string? ErrorCause { get; set; }
 
@@ -442,12 +455,15 @@ public class EndProductionOrderMessage
     [JsonPropertyName("EndedDate")]
     public string? EndedDate { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("UseTimeAndAttendanceCost")]
     public string? UseTimeAndAttendanceCost { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("AutoReportAsFinished")]
     public string? AutoReportAsFinished { get; set; }
 
+    /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("AutoUpdate")]
     public string? AutoUpdate { get; set; }
 }

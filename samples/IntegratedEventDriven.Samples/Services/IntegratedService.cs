@@ -12,7 +12,7 @@ namespace IntegratedEventDriven.Samples.Services;
 /// <summary>
 /// Integrated service that consumes Service Bus events and queries OData
 /// </summary>
-public class IntegratedService
+public class IntegratedService : IAsyncDisposable
 {
     private readonly ServiceBusConfig _serviceBusConfig;
     private readonly D365Config _d365Config;
@@ -81,7 +81,7 @@ public class IntegratedService
                 }
 
                 // Only process TSI Production Order Released to MES events
-                if (businessEvent.BusinessEventId != "TSIProductionOrderReleasedToMESBusinessEvent")
+                if (businessEvent.BusinessEventId != TSIBusinessEventTypes.ProductionOrderReleasedToMES)
                 {
                     await _receiver.CompleteMessageAsync(message, cancellationToken);
                     continue;

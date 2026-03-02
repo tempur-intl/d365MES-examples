@@ -98,6 +98,18 @@ public class BusinessEventEnvelope
 }
 
 /// <summary>
+/// Known TSI business event type identifiers as published by D365 via the BusinessEventId field.
+/// </summary>
+public static class TSIBusinessEventTypes
+{
+    /// <summary>Production order has been finalised and released to the MES. MES should fetch full order data via OData.</summary>
+    public const string ProductionOrderReleasedToMES = "TSIProductionOrderReleasedToMESBusinessEvent";
+
+    /// <summary>A previously released production order has been updated; the MES should refresh its local data.</summary>
+    public const string ProductionOrderUpdated = "TSIProductionOrderUpdatedMESEvent";
+}
+
+/// <summary>
 /// Service Bus configuration
 /// </summary>
 public class ServiceBusConfig

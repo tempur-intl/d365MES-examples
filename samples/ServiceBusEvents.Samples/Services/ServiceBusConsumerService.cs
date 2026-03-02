@@ -8,7 +8,7 @@ namespace ServiceBusEvents.Samples.Services;
 /// <summary>
 /// Service for consuming D365 business events from Azure Service Bus
 /// </summary>
-public class ServiceBusConsumerService
+public class ServiceBusConsumerService : IAsyncDisposable
 {
     private readonly ServiceBusConfig _config;
     private readonly ILogger<ServiceBusConsumerService> _logger;
@@ -181,6 +181,8 @@ public class ServiceBusConsumerService
         int maxMessages = 10,
         CancellationToken cancellationToken = default)
     {
+        // TODO: dlqReceiver is not disposed if an exception is thrown during message processing.
+        // Refactor to use 'await using var dlqReceiver = ...' or wrap in try/finally.
         ServiceBusReceiver dlqReceiver;
 
         if (_config.EntityType.Equals("Topic", StringComparison.OrdinalIgnoreCase))
@@ -283,9 +285,9 @@ public class ServiceBusConsumerService
     {
         return eventId switch
         {
-            "TSIProductionOrderReleasedToMESBusinessEvent" =>
+            TSIProductionOrderReleasedToMESBusinessEvent.EventTypeId =>
                 JsonSerializer.Deserialize<TSIProductionOrderReleasedToMESBusinessEvent>(businessEventJson, options),
-            "TSIProductionOrderUpdatedMESEvent" =>
+            TSIProductionOrderUpdatedMESEvent.EventTypeId =>
                 JsonSerializer.Deserialize<TSIProductionOrderUpdatedMESEvent>(businessEventJson, options),
             "ProductionOrderReleasedBusinessEvent" =>
                 JsonSerializer.Deserialize<ProductionOrderReleasedEvent>(businessEventJson, options),
