@@ -203,6 +203,12 @@ All MES Integration API messages follow this envelope structure:
 | `AutoReportAsFinished` | Enum (Yes \| No) | Optional |
 | `AutoUpdate` | Enum (Yes \| No) | Optional |
 
+## Note: Route Card Message Not Used
+
+The standard MES integration also defines a fifth message type — **`ProdProductionOrderRouteCard`** (time used for operation / route card). This message type is **not implemented in this integration**.
+
+Reason: D365 route/operation costing is not used for MES-handled production orders. Time tracking, operation sequencing, and routing are managed entirely within the MES and are not written back to D365. If this changes in future, refer to the [Microsoft MES Integration documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration#time-used-for-operation-route-card-message) for the full parameter set.
+
 ## Configuration and Setup
 
 ### Enabling MES Integration

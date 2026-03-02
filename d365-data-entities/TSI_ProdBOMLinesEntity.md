@@ -118,7 +118,7 @@ The following fields are custom extensions and must be verified to exist in your
 - Read access to `InventItemGroupItem`
 - Read access to `TSIInventTable`
 - Read access to `InventDim`
-- Execute permission on `TSI_ProdBomLinesEntity`
+- Execute permission on `TSI_ProdBOMLinesEntity`
 - View permission for Production Control module
 
 ## Performance Considerations

@@ -1,8 +1,8 @@
-# TSI_LabelLogosEntity - Production Label Logo Selection Entity Definition
+# TSI_LabelLogoEntity - Production Label Logo Selection Entity Definition
 
 ## Overview
 
-**Entity Name**: `TSI_LabelLogosEntity`
+**Entity Name**: `TSI_LabelLogoEntity`
 **Purpose**: Returns applicable logo files for label printing based on product family, destination country, and item attributes
 **Primary Use**: MES system logo selection with complex filtering rules
 **Relationship**: Child entity of TSI_LabelEntity (1:many relationship)
@@ -58,7 +58,7 @@ Results are ordered by `TSILogoPosition` within the helper view to ensure consis
 - **Public**: Yes
 - **Allow Edit**: No (Read-only entity)
 - **Data Management Enabled**: Yes
-- **Data Management Staging Table**: TSI_LabelLogosStaging
+- **Data Management Staging Table**: TSI_LabelLogoStaging
 - **OData Enabled**: Yes
 - **Primary Key**: EntityKey (TSILogoId, ProdId)
 - **Public Collection Name**: TSI_LabelLogos
@@ -74,7 +74,7 @@ Results are ordered by `TSILogoPosition` within the helper view to ensure consis
 - **Relationship Type**: Composition
 
 **Navigation Chain (First-Level Expansion Only):**
-- TSI_LabelEntity → `Logos` → TSI_LabelLogosEntity (first level only)
+- TSI_LabelEntity → `Logos` → TSI_LabelLogoEntity (first level only)
 - **D365 Limitation**: Only first-level $expand supported - nested expansion NOT supported
 - **Recommended**: Query TSI_LabelEntity directly: `GET /data/TSI_Labels?$filter=ProdId eq 'PROD-001234'&$expand=Logos`
 
@@ -82,7 +82,7 @@ Results are ordered by `TSILogoPosition` within the helper view to ensure consis
 
 ### Privileges Required
 - Read access to `TSI_LabelLogoHelperView`
-- Execute permission on `TSI_LabelLogosEntity`
+- Execute permission on `TSI_LabelLogoEntity`
 
 ## Performance Considerations
 
@@ -218,7 +218,7 @@ ORDER BY TSILogoPosition;
 ```sql
 -- Test the entity directly
 SELECT ProdId, TSILogoId, TSILogoPath, TSILogoPosition, TSILogIdDescr
-FROM TSI_LabelLogosEntity
+FROM TSI_LabelLogoEntity
 WHERE ProdId = 'PROD-001234'
 ORDER BY TSILogoPosition;
 ```

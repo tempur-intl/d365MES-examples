@@ -10,7 +10,6 @@ The D365 MES Integration API enables third-party MES systems to communicate prod
 - ✅ Reporting material consumption (picking lists)
 - ✅ Reporting production as finished
 - ✅ Ending production orders
-- ✅ Ending production orders
 
 ## 📚 Documentation
 

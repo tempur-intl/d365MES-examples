@@ -353,22 +353,21 @@ Parse Response
 Display in MES UI
 ```
 
-### Bidirectional (Inventory)
+### Inventory Visibility (Read-Only)
 
 ```
-MES Produces Item
-    ↓
-IvaService.PostOnHandChangeAsync()
-    ↓
-Inventory Visibility Service
-    ↓
-
 MES Queries Stock
     ↓
 IvaService.QueryOnHandAsync()
     ↓
 Inventory Visibility Service
+    ↓
+Current on-hand balances returned
 ```
+
+> The Inventory Visibility Add-in is used **read-only** by the MES. On-hand balances are queried for
+> production planning reference. Inventory movements are recorded in D365 via the MES Integration
+> message API (material consumption / report as finished), not posted directly to IVA.
 
 ### Event-Driven (Service Bus)
 
@@ -483,6 +482,34 @@ D365 Event → Service Bus Topic → Subscription Filter → MES Consumer
                                       ↓ (if failed)
                                  Dead Letter Queue
 ```
+
+### Custom Business Events and the TSIReadyForMes Flag
+
+Not all production orders in D365 are managed by the MES — only a subset are routed through it. To avoid the MES receiving noise from every production order lifecycle event, two **custom business events** were created rather than using the standard `ProdProductionOrderReleased` event:
+
+| Event | BusinessEventId | Purpose |
+|-------|----------------|---------|
+| Released to MES | `TSIProductionOrderReleasedToMESBusinessEvent` | Fired when an order is finalised/scheduled and ready for the MES to pick up |
+| Order Updated | `TSIProductionOrderUpdatedMESEvent` | Fired when a previously released order is changed (qty, schedule, etc.) and the MES should refresh its data |
+
+**The `TSIReadyForMes` field is the gate.** Both custom events are configured in D365 to fire only when the `TSIReadyForMes` flag on `ProdTable` is set. If an order is not flagged for MES handling, neither event fires and the MES never sees it.
+
+**Data flow on event receipt:**
+```
+TSIProductionOrderReleasedToMESBusinessEvent received
+    ↓
+Extract ProductionOrderNumber + Resource from envelope
+    ↓
+Query TSI_Jobs OData entity (filtered by ProdId)
+    ↓
+Query TSI_ProdBOMLines OData entity (filtered by ProdId)
+    ↓
+(Optional) Query TSI_Labels for label printing data
+    ↓
+MES schedules and starts the order
+```
+
+The event payload itself is intentionally minimal (order number + resource). Full order data is always fetched fresh via OData immediately after the event is received. This keeps the events lightweight and ensures the MES always has the latest D365 data.
 
 ## 🔮 Future Enhancements
 

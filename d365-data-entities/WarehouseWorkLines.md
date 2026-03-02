@@ -94,105 +94,6 @@ GET /data/WarehouseWorkLines
 
 This filters for active work (equivalent to `ExpeditionStatus < 10` in AX2009)
 
-### Primary Key
-
-- `WmsPalletId`
-- `dataAreaId`
-
-### Indexes
-
-- Primary index on `WmsPalletId`, `dataAreaId`
-- Index on `ExpeditionStatus` for filtering
-
-## Entity Properties
-
-```
-General:
-  - Name: WarehouseWorkLines (Standard D365 Entity)
-  - Label: MES Active Pallet Transport
-  - Public Entity Name: TSI_ActivePalletTransports
-  - Public Collection Name: TSI_ActivePalletTransports
-  - Is Public: Yes
-
-Data Management:
-  - Entity Category: Reference
-  - Data Management Enabled: Yes
-
-OData:
-  - Is Read Only: Yes
-```
-
-## X++ Code Structure
-
-### Data Entity Query
-
-The entity should implement a query with WHERE clause:
-
-```xpp
-// In the entity's init() method or query
-public void init()
-{
-    super();
-
-    // Filter for active work/transports
-    // NOTE: Original AX2009 filter was ExpeditionStatus < 10
-    // In D365, this likely translates to specific work status values:
-    WHSWork_ds.addRange(fieldNum(WHSWork, workStatus))
-        .value(strFmt('%1,%2,%3',
-            WHSWorkStatus::Open,      // Example: adjust based on your needs
-            WHSWorkStatus::InProcess,
-            WHSWorkStatus::Completed));
-
-    // Alternative: If you have custom ExpeditionStatus field
-    // WHSWork_ds.addRange(fieldNum(WHSWork, ExpeditionStatus))
-    //     .value(queryValue(10), queryValue(QueryRangeType::Less));
-}
-```
-
-### Alternative: Using a View
-
-If you prefer, create a view first:
-
-```xpp
-// Note: Using standard WarehouseWorkLines entity
-// No custom view required
-{
-    public void initValue()
-    {
-        super();
-    }
-}
-
-// View query in AOT
-SELECT WmsPalletId, ExpeditionStatus, dataAreaId
-FROM WHSWork  -- Or your equivalent table
-WHERE workStatus IN (Open, InProcess, Completed)  -- Adjust as needed
-```
-
-## OData Endpoint
-
-### Base URL
-```
-https://<your-d365-instance>.operations.dynamics.com/data/TSI_ActivePalletTransports
-```
-
-### Example Queries
-
-#### Get all active transports for company 500
-```
-GET /data/TSI_ActivePalletTransports?$filter=dataAreaId eq '500'
-```
-
-#### Get specific pallet
-```
-GET /data/TSI_ActivePalletTransports?$filter=dataAreaId eq '500' and WmsPalletId eq 'PALLET001'
-```
-
-#### Get transports with status less than 5
-```
-GET /data/TSI_ActivePalletTransports?$filter=dataAreaId eq '500' and ExpeditionStatus lt 5
-```
-
 ## Integration Examples
 
 ### TypeScript Integration
@@ -352,33 +253,20 @@ public class ODataResponse<T>
 ```bash
 # Get OAuth token first (use existing D365TokenService)
 
-# Test endpoint
+# Test endpoint (using standard WarehouseWorkLines entity)
 curl -X GET \
-  "https://<instance>.operations.dynamics.com/data/TSI_ActivePalletTransports?\$filter=dataAreaId%20eq%20'500'&\$top=10" \
+  "https://<instance>.operations.dynamics.com/data/WarehouseWorkLines?\$filter=dataAreaId%20eq%20'500'%20and%20WarehouseWorkStatus%20ne%20Microsoft.Dynamics.DataEntities.WHSWorkStatus'Closed'&\$top=10" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json"
 ```
 
 ## Deployment Checklist
 
-- [ ] **CRITICAL**: Identify which D365 table contains pallet transport data:
-  - [ ] Check if `WHSWork` has the needed data
-  - [ ] Check if custom `WMSTransport` table was preserved
-  - [ ] Check `WHSLoadLine`, `WHSShipmentTable` as alternatives
-- [ ] Map AX2009 fields to D365 equivalents:
-  - [ ] `LicensePlateId` → Verify field name and location
-  - [ ] `ExpeditionStatus` → Map to D365 work status or custom field
-- [ ] Translate filter logic (`ExpeditionStatus < 10` → D365 work statuses)
-- [ ] Verify `WarehouseWorkLines` entity is accessible
-- [ ] Configure entity properties (Is Public = Yes)
-- [ ] Add fields and map to data source
-- [ ] Set primary key
-- [ ] Add query filter for `ExpeditionStatus < 10`
-- [ ] Build and synchronize database
-- [ ] Test in Data Management workspace
-- [ ] Test OData endpoint
-- [ ] Grant security permissions to OAuth app
-- [ ] Update MES system integration
+- [ ] Verify `WarehouseWorkLines` entity is accessible via OData in your environment
+- [ ] Confirm `WarehouseWorkStatus` values that correspond to "active" work in your setup
+- [ ] Test OData query with appropriate `WarehouseWorkStatus` filter
+- [ ] Grant security permissions to the OAuth service principal for `WarehouseWorkLines`
+- [ ] Update MES integration to use `LicensePlateNumber` and `WarehouseWorkStatus` instead of legacy field names
 
 ## Security
 
@@ -399,6 +287,6 @@ The OAuth service principal needs:
 ## Notes
 
 - This is a read-only entity (no insert/update/delete)
-- The filter `ExpeditionStatus < 10` is critical for performance
-- Consider adding an index on `ExpeditionStatus` if queries are slow
-- The entity respects D365 security and company boundaries
+- Filter on `WarehouseWorkStatus` to exclude closed/cancelled work (equivalent to legacy `ExpeditionStatus < 10`)
+- The standard `WarehouseWorkLines` entity respects D365 security and company boundaries
+- No custom entity development is required
