@@ -51,12 +51,12 @@
     "licensePlateNumber": "LP-2024-001",
     "itemBatchNumber": "FINISHED-001",
     "productSerialNumber": "SN-2024-001",
-    "endJob": "Yes",
+    "endJob": "No",
     "endPickingList": "Yes",
     "endRouteCard": "Yes",
     "acceptError": "No",
-    "generateLicensePlate": "Yes",
-    "printLabel": "Yes",
+    "generateLicensePlate": "No",
+    "printLabel": "No",
     "reportAsFinishedDate": "2024-01-15",
     "executedDateTime": "2024-01-15T14:30:00Z"
   }
