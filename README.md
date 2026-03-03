@@ -46,11 +46,11 @@ sequenceDiagram
     D365->>MES: TSIProductionOrderUpdatedMESEvent
     MES->>D365: OData: TSI_Jobs
     D365-->>MES: Updated job details
-    MES->>D365: OData: TSI_ProdBOMLines (if changed)
+    MES->>D365: OData: TSI_ProdBOMLines
     D365-->>MES: Updated BOM lines
-    MES->>D365: OData: TSI_Items (if changed)
+    MES->>D365: OData: TSI_Items
     D365-->>MES: Updated item data
-    MES->>D365: OData: TSI_Labels (if changed)
+    MES->>D365: OData: TSI_Labels
     D365-->>MES: Updated label data
 
     Note over D365,MES: Start Production Order
