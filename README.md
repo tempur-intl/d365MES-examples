@@ -20,6 +20,58 @@ D365IntegrationSamples/
 └── README.md
 ```
 
+## 🔄 Integration Flow
+
+```mermaid
+sequenceDiagram
+    participant D365 as Dynamics 365 SCM
+    participant MES as Third-Party MES
+    participant IVA as Inventory Visibility
+    participant LN as Lasernet
+
+    Note over D365,MES: Order Released
+    D365->>MES: TSIProductionOrderReleasedToMESBusinessEvent
+    MES->>D365: OData: TSI_Jobs
+    D365-->>MES: Job details
+    MES->>D365: OData: TSI_ProdBOMLines
+    D365-->>MES: BOM lines
+    MES->>D365: OData: TSI_Items
+    D365-->>MES: Item data
+    MES->>D365: OData: TSI_Labels
+    D365-->>MES: Label data
+    MES->>IVA: Query on-hand inventory
+    IVA-->>MES: On-hand quantities
+
+    Note over D365,MES: Order Updated
+    D365->>MES: TSIProductionOrderUpdatedMESEvent
+    MES->>D365: OData: TSI_Jobs
+    D365-->>MES: Updated job details
+    MES->>D365: OData: TSI_ProdBOMLines (if changed)
+    D365-->>MES: Updated BOM lines
+    MES->>D365: OData: TSI_Items (if changed)
+    D365-->>MES: Updated item data
+    MES->>D365: OData: TSI_Labels (if changed)
+    D365-->>MES: Updated label data
+
+    Note over D365,MES: Start Production Order
+    MES->>D365: ProdProductionOrderStart
+
+    Note over D365,MES: Report Material Consumption
+    MES->>D365: ProdProductionOrderPickingList
+
+    Note over D365,MES: Report as Finished
+    MES->>D365: ProdProductionOrderReportFinished
+    MES->>LN: Print job via Lasernet Service Bus
+
+    Note over D365,MES: Custom Messages
+    MES->>D365: CreateWarehouseWork
+    MES->>D365: EndQuarantine
+    MES->>D365: CreateCountingJournal
+
+    Note over D365,MES: End Production Order
+    MES->>D365: ProdProductionOrderEnd
+```
+
 ## 🔐 Authentication Overview
 
 Both D365 and the Inventory Visibility Add-in use **Azure AD (Microsoft Entra ID)** OAuth 2.0 authentication:
