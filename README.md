@@ -200,6 +200,14 @@ DOTNET_ENVIRONMENT=Development dotnet run
 
 ## 📚 Documentation
 
+### Sample READMEs
+- [Inventory Visibility Samples](samples/InventoryVisibility.Samples/README.md)
+- [MES Integration Samples](samples/MesIntegration.Samples/README.md)
+- [OData Samples](samples/OData.Samples/README.md)
+- [Service Bus Events Samples](samples/ServiceBusEvents.Samples/README.md)
+- [Integrated Event-Driven Samples](samples/IntegratedEventDriven.Samples/README.md)
+
+### External References
 - [MES Integration API Parameters](MES_Integration_API_Parameters.md) - Comprehensive parameter mapping for MES Integration API
 - [Inventory Visibility API Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/inventory-visibility-api)
 - [MES Integration Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)

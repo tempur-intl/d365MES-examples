@@ -4,12 +4,17 @@ This document provides comprehensive mapping of parameters used by Manufacturing
 
 ## Overview
 
-The MES Integration API enables third-party MES systems to communicate production events to D365 Supply Chain Management. The API supports four main message types:
+The MES Integration API enables third-party MES systems to communicate production events to D365 Supply Chain Management. The API supports four standard message types plus two TSI custom message types:
 
+**Standard message types:**
 1. **Start Production Order** (`ProdProductionOrderStart`)
 2. **Report as Finished** (`ProdProductionOrderReportFinished`)
 3. **Material Consumption** (`ProdProductionOrderPickingList`)
 4. **End Production Order** (`ProdProductionOrderEnd`)
+
+**TSI custom message types:**
+5. **Inventory Count Journal** (`TSIInventCountJournal`)
+6. **Update Batch Disposition** (`TSIUpdateBatchDisposition`)
 
 ## API Endpoint
 
@@ -209,6 +214,60 @@ The standard MES integration also defines a fifth message type — **`ProdProduc
 
 Reason: D365 route/operation costing is not used for MES-handled production orders. Time tracking, operation sequencing, and routing are managed entirely within the MES and are not written back to D365. If this changes in future, refer to the [Microsoft MES Integration documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration#time-used-for-operation-route-card-message) for the full parameter set.
 
+## 5. Inventory Count Journal Message
+
+**Message Type:** `TSIInventCountJournal`
+
+Creates an inventory counting journal line in D365 for a specific item, location, and license plate. Typically sent after a physical count on the production floor.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ProductionOrderNumber` | String | Mandatory | Production order the count is associated with |
+| `ItemNumber` | String | Mandatory | Item number being counted |
+| `Location` | String | Mandatory | Warehouse location where the count was performed |
+| `LicensePlate` | String | Optional | License plate at the counted location |
+| `CountedQuantity` | String | Mandatory | Physical count quantity (sent as a string) |
+| `CountDate` | Date | Mandatory | Date the physical count was performed (ISO 8601: `yyyy-MM-dd`) |
+
+### Example
+
+```json
+{
+  "_companyId": "500",
+  "_messageQueue": "JmgMES3P",
+  "_messageType": "TSIInventCountJournal",
+  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"Location\":\"Aisle01-Rack01-Shelf01\",\"LicensePlate\":\"LP-2024-001\",\"CountedQuantity\":\"10\",\"CountDate\":\"2024-01-15\"}"
+}
+```
+
+## 6. Update Batch Disposition Message
+
+**Message Type:** `TSIUpdateBatchDisposition`
+
+Updates the disposition code for a specific inventory batch in D365. Used when MES completes a quality inspection or quarantine review and needs to change the batch status (e.g., from `Quarantine` to `Available`).
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ProductionOrderNumber` | String | Mandatory | Production order the batch is associated with |
+| `ItemNumber` | String | Mandatory | Item number of the batch |
+| `BatchNumber` | String | Mandatory | Batch/lot number to update |
+| `DispositionCode` | String | Mandatory | Target disposition code as configured in D365 (e.g., `Available`, `Quarantine`) |
+
+### Example
+
+```json
+{
+  "_companyId": "500",
+  "_messageQueue": "JmgMES3P",
+  "_messageType": "TSIUpdateBatchDisposition",
+  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"BatchNumber\":\"BATCH001\",\"DispositionCode\":\"Available\"}"
+}
+```
+
 ## Configuration and Setup
 
 ### Enabling MES Integration
@@ -237,5 +296,7 @@ Messages are processed in sequence and retried up to 3 times on failure. Failed 
 ## References
 
 - [MES Integration API Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
+- [Message Processor Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/message-processor/message-processor)
+- [Message Processor Developer Guide](https://learn.microsoft.com/en-us/dynamics365/supply-chain/message-processor/developer/message-processor-develop)
 - [D365 Data Entities](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/data-entities-data-packages)
 - [Business Events](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/business-events/home-page)
