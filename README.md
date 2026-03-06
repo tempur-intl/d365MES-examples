@@ -63,10 +63,13 @@ sequenceDiagram
     MES->>D365: ProdProductionOrderReportFinished
     MES->>LN: Print job via Lasernet Service Bus
 
-    Note over D365,MES: Custom Messages
-    MES->>D365: CreateWarehouseWork
-    MES->>D365: EndQuarantine
-    MES->>D365: CreateCountingJournal
+    Note over D365,MES: Create Movement Work (Synchronous — Standalone Service)
+    MES->>D365: TSIMesWebService/process
+    D365-->>MES: "Created"
+
+    Note over D365,MES: Other Custom Messages (Async — Message Queue)
+    MES->>D365: TSIUpdateBatchDisposition
+    MES->>D365: TSIInventCountJournal
 
     Note over D365,MES: End Production Order
     MES->>D365: ProdProductionOrderEnd
@@ -103,6 +106,9 @@ MES Integration API examples:
 - ✅ Report as finished
 - ✅ Material consumption (picking lists)
 - ✅ End production order
+- ✅ Create warehouse movement work (return raw materials to warehouse)
+- ✅ Create inventory count journal (`TSIInventCountJournal`)
+- ✅ Update batch disposition code (`TSIUpdateBatchDisposition`)
 
 ### 4. **OData.Samples**
 OData endpoint examples for TSI custom entities and warehouse operations:
@@ -197,6 +203,8 @@ DOTNET_ENVIRONMENT=Development dotnet run
 - [MES Integration API Parameters](MES_Integration_API_Parameters.md) - Comprehensive parameter mapping for MES Integration API
 - [Inventory Visibility API Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/inventory/inventory-visibility-api)
 - [MES Integration Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
+- [Message Processor Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/message-processor/message-processor)
+- [Message Processor Developer Guide](https://learn.microsoft.com/en-us/dynamics365/supply-chain/message-processor/developer/message-processor-develop)
 - [D365 OData Documentation](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata)
 - [Business Events Documentation](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/business-events/home-page)
 

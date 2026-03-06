@@ -35,6 +35,7 @@ class Program
             .AddScoped<AzureAdTokenProvider>()
             .AddScoped<D365TokenProvider>()
             .AddScoped<MesService>()
+            .AddScoped<MovementWorkService>()
             .BuildServiceProvider();
 
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
@@ -64,12 +65,16 @@ class Program
                 sampleData.ProductionOrderNumber);
 
             var mesService = serviceProvider.GetRequiredService<MesService>();
+            var movementWorkService = serviceProvider.GetRequiredService<MovementWorkService>();
 
             // Simulate a complete production order lifecycle using data from JSON
             await RunStartProductionOrderSample(mesService, sampleData, logger);
             await RunMaterialConsumptionSample(mesService, sampleData, logger);
             await RunReportAsFinishedSample(mesService, sampleData, logger);
             await RunEndProductionOrderSample(mesService, sampleData, logger);
+            await RunCreateMovementWorkSample(movementWorkService, sampleData, logger);
+            await RunCreateInventCountJournalSample(mesService, sampleData, logger);
+            await RunUpdateBatchDispositionSample(mesService, sampleData, logger);
 
             logger.LogInformation("\n=== All MES integration samples completed successfully ===");
         }
@@ -175,5 +180,77 @@ class Program
 
         await mesService.EndProductionOrderAsync(message);
         logger.LogInformation("Production order {OrderNumber} ended", sampleData.ProductionOrderNumber);
+    }
+
+    static async Task RunCreateMovementWorkSample(
+        MovementWorkService movementWorkService,
+        SampleDataConfig sampleData,
+        ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 5: Create Movement Work ---");
+
+        var contract = new MovementWorkContract
+        {
+            LicensePlate = sampleData.MovementWork.LicensePlate,
+            SourceLocation = sampleData.MovementWork.SourceLocation,
+            DestinationLocation = sampleData.MovementWork.DestinationLocation,
+            Quantity = sampleData.MovementWork.Quantity,
+            ItemId = sampleData.MovementWork.ItemId
+            // DataAreaId is intentionally omitted here — the service defaults it from config
+        };
+
+        var result = await movementWorkService.CreateMovementWorkAsync(contract);
+        logger.LogInformation(
+            "Movement work created for license plate {LicensePlate}. D365 response: {Result}",
+            contract.LicensePlate,
+            result);
+    }
+
+    static async Task RunCreateInventCountJournalSample(
+        MesService mesService,
+        SampleDataConfig sampleData,
+        ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 6: Create Inventory Count Journal ---");
+
+        var data = sampleData.InventCountJournal;
+        var message = new InventCountJournalMessage
+        {
+            ProductionOrderNumber = data.ProductionOrderNumber,
+            ItemNumber = data.ItemNumber,
+            Location = data.Location,
+            LicensePlate = data.LicensePlate,
+            CountedQuantity = data.CountedQuantity.ToString(),
+            CountDate = data.CountDate
+        };
+
+        await mesService.CreateInventCountJournalAsync(message);
+        logger.LogInformation(
+            "Inventory count journal created for item {ItemNumber} at location {Location}",
+            message.ItemNumber,
+            message.Location);
+    }
+
+    static async Task RunUpdateBatchDispositionSample(
+        MesService mesService,
+        SampleDataConfig sampleData,
+        ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 7: Update Batch Disposition ---");
+
+        var data = sampleData.UpdateBatchDisposition;
+        var message = new UpdateBatchDispositionMessage
+        {
+            ProductionOrderNumber = data.ProductionOrderNumber,
+            ItemNumber = data.ItemNumber,
+            BatchNumber = data.BatchNumber,
+            DispositionCode = data.DispositionCode
+        };
+
+        await mesService.UpdateBatchDispositionAsync(message);
+        logger.LogInformation(
+            "Batch disposition updated for batch {BatchNumber} to {DispositionCode}",
+            message.BatchNumber,
+            message.DispositionCode);
     }
 }

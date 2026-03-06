@@ -59,5 +59,26 @@
     "printLabel": "No",
     "reportAsFinishedDate": "2024-01-15",
     "executedDateTime": "2024-01-15T14:30:00Z"
+  },
+  "movementWork": {
+    "licensePlate": "LP-2024-001",
+    "sourceLocation": "Aisle01-Rack01-Shelf01",
+    "destinationLocation": "",
+    "quantity": 0,
+    "itemId": ""
+  },
+  "inventCountJournal": {
+    "productionOrderNumber": "10001147",
+    "itemNumber": "20821",
+    "location": "Aisle01-Rack01-Shelf01",
+    "licensePlate": "LP-2024-001",
+    "countedQuantity": 10,
+    "countDate": "2024-01-15"
+  },
+  "updateBatchDisposition": {
+    "productionOrderNumber": "10001147",
+    "itemNumber": "20821",
+    "batchNumber": "BATCH001",
+    "dispositionCode": "Available"
   }
 }

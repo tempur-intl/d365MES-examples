@@ -24,6 +24,15 @@ public class SampleDataConfig
 
     [JsonPropertyName("reportAsFinished")]
     public ReportAsFinishedData ReportAsFinished { get; set; } = new();
+
+    [JsonPropertyName("movementWork")]
+    public MovementWorkData MovementWork { get; set; } = new();
+
+    [JsonPropertyName("inventCountJournal")]
+    public InventCountJournalData InventCountJournal { get; set; } = new();
+
+    [JsonPropertyName("updateBatchDisposition")]
+    public UpdateBatchDispositionData UpdateBatchDisposition { get; set; } = new();
 }
 
 public class MaterialConsumptionData
@@ -78,6 +87,24 @@ public class ReportAsFinishedData
 
     [JsonPropertyName("printLabel")]
     public string PrintLabel { get; set; } = string.Empty;
+}
+
+public class MovementWorkData
+{
+    [JsonPropertyName("licensePlate")]
+    public string LicensePlate { get; set; } = string.Empty;
+
+    [JsonPropertyName("sourceLocation")]
+    public string SourceLocation { get; set; } = string.Empty;
+
+    [JsonPropertyName("destinationLocation")]
+    public string DestinationLocation { get; set; } = string.Empty;
+
+    [JsonPropertyName("quantity")]
+    public decimal Quantity { get; set; } = 0;
+
+    [JsonPropertyName("itemId")]
+    public string ItemId { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -466,4 +493,118 @@ public class EndProductionOrderMessage
     /// <summary>Valid values: <c>Yes</c> | <c>No</c></summary>
     [JsonPropertyName("AutoUpdate")]
     public string? AutoUpdate { get; set; }
+}
+
+/// <summary>
+/// Contract for the TSI MES movement work service.
+/// Only <see cref="LicensePlate"/> is required; all other fields default to empty/zero.
+/// </summary>
+public class MovementWorkContract
+{
+    [JsonPropertyName("LicensePlate")]
+    public required string LicensePlate { get; set; }
+
+    [JsonPropertyName("DataAreaId")]
+    public string DataAreaId { get; set; } = string.Empty;
+
+    [JsonPropertyName("SourceLocation")]
+    public string SourceLocation { get; set; } = string.Empty;
+
+    [JsonPropertyName("DestinationLocation")]
+    public string DestinationLocation { get; set; } = string.Empty;
+
+    [JsonPropertyName("Quantity")]
+    public decimal Quantity { get; set; } = 0;
+
+    [JsonPropertyName("ItemId")]
+    public string ItemId { get; set; } = string.Empty;
+}
+
+public class UpdateBatchDispositionData
+{
+    [JsonPropertyName("productionOrderNumber")]
+    public string ProductionOrderNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("itemNumber")]
+    public string ItemNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("batchNumber")]
+    public string BatchNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("dispositionCode")]
+    public string DispositionCode { get; set; } = string.Empty;
+}
+
+public class InventCountJournalData
+{
+    [JsonPropertyName("productionOrderNumber")]
+    public string ProductionOrderNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("itemNumber")]
+    public string ItemNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("location")]
+    public string Location { get; set; } = string.Empty;
+
+    [JsonPropertyName("licensePlate")]
+    public string LicensePlate { get; set; } = string.Empty;
+
+    [JsonPropertyName("countedQuantity")]
+    public decimal CountedQuantity { get; set; }
+
+    [JsonPropertyName("countDate")]
+    public string CountDate { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Message content for the <c>TSIInventCountJournal</c> MES message type.
+/// Creates an inventory counting journal line in D365 for a specific item/location/license plate.
+/// </summary>
+public class InventCountJournalMessage
+{
+    [JsonPropertyName("ProductionOrderNumber")]
+    public required string ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("ItemNumber")]
+    public required string ItemNumber { get; set; }
+
+    [JsonPropertyName("Location")]
+    public required string Location { get; set; }
+
+    [JsonPropertyName("LicensePlate")]
+    public string? LicensePlate { get; set; }
+
+    [JsonPropertyName("CountedQuantity")]
+    public required string CountedQuantity { get; set; }
+
+    [JsonPropertyName("CountDate")]
+    public required string CountDate { get; set; }
+}
+
+/// <summary>
+/// Message content for the <c>TSIUpdateBatchDisposition</c> MES message type.
+/// Updates the batch disposition code for a specific item/batch in D365.
+/// </summary>
+public class UpdateBatchDispositionMessage
+{
+    [JsonPropertyName("ProductionOrderNumber")]
+    public required string ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("ItemNumber")]
+    public required string ItemNumber { get; set; }
+
+    [JsonPropertyName("BatchNumber")]
+    public required string BatchNumber { get; set; }
+
+    [JsonPropertyName("DispositionCode")]
+    public required string DispositionCode { get; set; }
+}
+
+/// <summary>
+/// Request wrapper for <c>TSIMesWebServices/TSIMesWebService/process</c>.
+/// </summary>
+public class MovementWorkRequest
+{
+    [JsonPropertyName("_contract")]
+    public required MovementWorkContract Contract { get; set; }
 }

@@ -138,4 +138,30 @@ public class MesService
             message,
             cancellationToken);
     }
+
+    /// <summary>
+    /// Create an inventory counting journal line for a specific item/location/license plate
+    /// </summary>
+    public async Task CreateInventCountJournalAsync(
+        InventCountJournalMessage message,
+        CancellationToken cancellationToken = default)
+    {
+        await SendMessageAsync(
+            "TSIInventCountJournal",
+            message,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Update the batch disposition code for a specific item/batch
+    /// </summary>
+    public async Task UpdateBatchDispositionAsync(
+        UpdateBatchDispositionMessage message,
+        CancellationToken cancellationToken = default)
+    {
+        await SendMessageAsync(
+            "TSIUpdateBatchDisposition",
+            message,
+            cancellationToken);
+    }
 }
