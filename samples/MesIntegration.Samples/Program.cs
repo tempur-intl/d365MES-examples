@@ -218,6 +218,9 @@ class Program
         {
             ProductionOrderNumber = data.ProductionOrderNumber,
             ItemNumber = data.ItemNumber,
+            Site = data.Site,
+            Warehouse = data.Warehouse,
+            BatchNumber = data.BatchNumber,
             Location = data.Location,
             LicensePlate = data.LicensePlate,
             CountedQuantity = data.CountedQuantity.ToString(),

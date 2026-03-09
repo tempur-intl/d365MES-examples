@@ -543,6 +543,15 @@ public class InventCountJournalData
     [JsonPropertyName("itemNumber")]
     public string ItemNumber { get; set; } = string.Empty;
 
+    [JsonPropertyName("site")]
+    public string Site { get; set; } = string.Empty;
+
+    [JsonPropertyName("warehouse")]
+    public string Warehouse { get; set; } = string.Empty;
+
+    [JsonPropertyName("batchNumber")]
+    public string BatchNumber { get; set; } = string.Empty;
+
     [JsonPropertyName("location")]
     public string Location { get; set; } = string.Empty;
 
@@ -567,6 +576,15 @@ public class InventCountJournalMessage
 
     [JsonPropertyName("ItemNumber")]
     public required string ItemNumber { get; set; }
+
+    [JsonPropertyName("Site")]
+    public string? Site { get; set; }
+
+    [JsonPropertyName("Warehouse")]
+    public string? Warehouse { get; set; }
+
+    [JsonPropertyName("BatchNumber")]
+    public string? BatchNumber { get; set; }
 
     [JsonPropertyName("Location")]
     public required string Location { get; set; }

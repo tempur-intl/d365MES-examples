@@ -86,6 +86,9 @@ Edit `sample-data.json` with your actual production order data:
   "inventCountJournal": {
     "productionOrderNumber": "10001147",
     "itemNumber": "20821",
+    "site": "01",
+    "warehouse": "010",
+    "batchNumber": "BATCH001",
     "location": "Aisle01-Rack01-Shelf01",
     "licensePlate": "LP-2024-001",
     "countedQuantity": 10,
@@ -236,6 +239,9 @@ var message = new InventCountJournalMessage
 {
     ProductionOrderNumber = "10001147",
     ItemNumber = "20821",
+    Site = "01",
+    Warehouse = "010",
+    BatchNumber = "BATCH001",
     Location = "Aisle01-Rack01-Shelf01",
     LicensePlate = "LP-2024-001",
     CountedQuantity = "10",
@@ -253,7 +259,7 @@ await mesService.CreateInventCountJournalAsync(message);
   "_companyId": "500",
   "_messageQueue": "JmgMES3P",
   "_messageType": "TSIInventCountJournal",
-  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"Location\":\"Aisle01-Rack01-Shelf01\",\"LicensePlate\":\"LP-2024-001\",\"CountedQuantity\":\"10\",\"CountDate\":\"2024-01-15\"}"
+  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"Site\":\"01\",\"Warehouse\":\"010\",\"BatchNumber\":\"BATCH001\",\"Location\":\"Aisle01-Rack01-Shelf01\",\"LicensePlate\":\"LP-2024-001\",\"CountedQuantity\":\"10\",\"CountDate\":\"2024-01-15\"}"
 }
 ```
 

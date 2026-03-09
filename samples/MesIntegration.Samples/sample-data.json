@@ -70,6 +70,9 @@
   "inventCountJournal": {
     "productionOrderNumber": "10001147",
     "itemNumber": "20821",
+    "site": "01",
+    "warehouse": "010",
+    "batchNumber": "BATCH001",
     "location": "Aisle01-Rack01-Shelf01",
     "licensePlate": "LP-2024-001",
     "countedQuantity": 10,

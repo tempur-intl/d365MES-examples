@@ -226,6 +226,9 @@ Creates an inventory counting journal line in D365 for a specific item, location
 |-----------|------|----------|-------------|
 | `ProductionOrderNumber` | String | Mandatory | Production order the count is associated with |
 | `ItemNumber` | String | Mandatory | Item number being counted |
+| `Site` | String | Optional | Site (inventory dimension) |
+| `Warehouse` | String | Optional | Warehouse (inventory dimension) |
+| `BatchNumber` | String | Optional | Batch/lot number being counted |
 | `Location` | String | Mandatory | Warehouse location where the count was performed |
 | `LicensePlate` | String | Optional | License plate at the counted location |
 | `CountedQuantity` | String | Mandatory | Physical count quantity (sent as a string) |
@@ -238,7 +241,7 @@ Creates an inventory counting journal line in D365 for a specific item, location
   "_companyId": "500",
   "_messageQueue": "JmgMES3P",
   "_messageType": "TSIInventCountJournal",
-  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"Location\":\"Aisle01-Rack01-Shelf01\",\"LicensePlate\":\"LP-2024-001\",\"CountedQuantity\":\"10\",\"CountDate\":\"2024-01-15\"}"
+  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"Site\":\"01\",\"Warehouse\":\"010\",\"BatchNumber\":\"BATCH001\",\"Location\":\"Aisle01-Rack01-Shelf01\",\"LicensePlate\":\"LP-2024-001\",\"CountedQuantity\":\"10\",\"CountDate\":\"2024-01-15\"}"
 }
 ```
 
