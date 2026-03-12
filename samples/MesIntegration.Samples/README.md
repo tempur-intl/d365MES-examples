@@ -17,7 +17,7 @@ The D365 MES Integration API enables third-party MES systems to communicate prod
 ## 📚 Documentation
 
 For detailed parameter mappings and API reference, see:
-- [MES Integration API Parameters Documentation](../../d365-data-entities/MES_Integration_API_Parameters.md)
+- [MES Integration API Parameters Documentation](../../MES_Integration_API_Parameters.md)
 - [Microsoft MES Integration Documentation](https://learn.microsoft.com/en-us/dynamics365/supply-chain/production-control/mes-integration)
 
 ## 🔐 Authentication
