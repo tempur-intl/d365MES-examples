@@ -537,7 +537,7 @@ The ServiceBusEvents sample demonstrates event-driven integration with D365:
 ```mermaid
 flowchart LR
     A["D365 Event"] --> B["Service Bus Topic"] --> C["Subscription Filter"] --> D["MES Consumer"]
-    B --> E["Dead Letter Queue"] 
+    B --> E["Dead Letter Queue"]
 ```
 
 ### Custom Business Events and the TSIReadyForMes Flag
@@ -566,34 +566,7 @@ The event payload itself is intentionally minimal (order number + resource). Ful
 
 **D365 date format**: D365 business event payloads encode dates in the legacy format `/Date(milliseconds)/` (e.g. `/Date(1718000000000)/`). `BusinessEventModels.cs` includes a custom `D365DateTimeConverter` that transparently handles this when deserializing event envelopes.
 
-## 🔮 Future Enhancements
-
-Potential improvements:
-
-1. ~~**Business Events Integration**~~ ✅ **COMPLETED**
-   - ✅ Subscribe to D365 business events via Service Bus
-   - ✅ Real-time notifications to MES
-   - ✅ Per-line subscriptions with SQL filters
-
-2. **Batch Processing**
-   - Bulk insert/update operations
-   - Scheduled synchronization jobs
-
-3. **Enhanced Error Handling**
-   - Exponential backoff for transient errors
-   - Alerting on dead letter queue growth
-   - Automatic replay from DLQ after fixes
-
-4. **Monitoring**
-   - Application Insights integration
-   - Custom metrics and alerts
-   - Service Bus metrics tracking
-
-5. **Caching Layer**
-   - Redis for distributed caching
-   - Cache master data locally
-
-## 📚 References
+##  References
 
 - [Azure AD OAuth 2.0](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow)
 - [D365 OData](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/odata)
