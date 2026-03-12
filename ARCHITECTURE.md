@@ -150,13 +150,13 @@ sequenceDiagram
     Svc->>API: POST /api/environment/{EnvironmentId}/onhand/indexquery
     alt 200 OK
         API-->>Svc: On-hand balances (JSON)
-        Svc-->>App: List&lt;OnHandQueryResponse&gt;
+        Svc-->>App: On-hand records
     else 500 "Waiting for partition" (cold-start)
         API-->>Svc: 500 error
         Note over Svc: Retry with exponential backoff — 5 s, 10 s, 20 s (up to 3 attempts)
         Svc->>API: Retry POST
         API-->>Svc: On-hand balances
-        Svc-->>App: List&lt;OnHandQueryResponse&gt;
+        Svc-->>App: On-hand records
     end
 ```
 
