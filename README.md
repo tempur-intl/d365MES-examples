@@ -200,6 +200,9 @@ DOTNET_ENVIRONMENT=Development dotnet run
 
 ## 📚 Documentation
 
+### Architecture
+- [Architecture Overview](ARCHITECTURE.md) - Design decisions, request flows, auth patterns, and diagrams
+
 ### Sample READMEs
 - [Inventory Visibility Samples](samples/InventoryVisibility.Samples/README.md)
 - [MES Integration Samples](samples/MesIntegration.Samples/README.md)
