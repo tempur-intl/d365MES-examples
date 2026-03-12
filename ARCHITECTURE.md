@@ -28,8 +28,8 @@ graph TD
     INT --> DTP
 
     AAD --> AzureAD["Azure AD OAuth 2.0"]
-    ITP --> IVASvc["Inventory Visibility Service"]
-    DTP --> D365["D365 SCM"]
+    ITP -->|"HTTPS"| IVASvc["Inventory Visibility Service"]
+    DTP -->|"OData / Message API (HTTPS)"| D365["D365 SCM"]
     SBE -->|"connection string"| SB["Azure Service Bus"]
     INT -->|"connection string"| SB
     D365 -->|"Business Events"| SB
