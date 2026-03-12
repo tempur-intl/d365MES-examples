@@ -522,9 +522,6 @@ public class MovementWorkContract
 
 public class UpdateBatchDispositionData
 {
-    [JsonPropertyName("productionOrderNumber")]
-    public string ProductionOrderNumber { get; set; } = string.Empty;
-
     [JsonPropertyName("itemNumber")]
     public string ItemNumber { get; set; } = string.Empty;
 
@@ -537,9 +534,6 @@ public class UpdateBatchDispositionData
 
 public class InventCountJournalData
 {
-    [JsonPropertyName("productionOrderNumber")]
-    public string ProductionOrderNumber { get; set; } = string.Empty;
-
     [JsonPropertyName("itemNumber")]
     public string ItemNumber { get; set; } = string.Empty;
 

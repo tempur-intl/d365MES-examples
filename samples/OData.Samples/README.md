@@ -78,7 +78,17 @@ Edit `sample-queries.json` with your actual data identifiers:
 
 ```bash
 cd samples/OData.Samples
+
+# Run all samples
 dotnet run
+
+# Run a single sample by name
+dotnet run items
+dotnet run bomlines
+dotnet run labels
+dotnet run jobs
+dotnet run worklines
+dotnet run batches
 ```
 
 ## 📝 Sample Queries

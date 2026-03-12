@@ -106,7 +106,18 @@ Edit `sample-data.json` with your actual production order data:
 
 ```bash
 cd samples/MesIntegration.Samples
+
+# Run all samples
 dotnet run
+
+# Run a single sample by name
+dotnet run start
+dotnet run material
+dotnet run raf
+dotnet run end
+dotnet run movement
+dotnet run countjournal
+dotnet run batchdisposition
 ```
 
 ## 📝 MES Integration Workflow

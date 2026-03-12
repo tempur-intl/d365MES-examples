@@ -41,6 +41,17 @@ class Program
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("=== D365 MES Integration Samples ===\n");
 
+        // Optional: pass a sample name to run only that one, e.g.:
+        //   dotnet run start
+        //   dotnet run material
+        //   dotnet run raf
+        //   dotnet run end
+        //   dotnet run movement
+        //   dotnet run countjournal
+        //   dotnet run batchdisposition
+        // Omit the argument to run all samples.
+        var filter = args.Length > 0 ? args[0].ToLowerInvariant() : null;
+
         try
         {
             // Load sample data from JSON file
@@ -68,13 +79,20 @@ class Program
             var movementWorkService = serviceProvider.GetRequiredService<MovementWorkService>();
 
             // Simulate a complete production order lifecycle using data from JSON
-            await RunStartProductionOrderSample(mesService, sampleData, logger);
-            await RunMaterialConsumptionSample(mesService, sampleData, logger);
-            await RunReportAsFinishedSample(mesService, sampleData, logger);
-            await RunEndProductionOrderSample(mesService, sampleData, logger);
-            await RunCreateMovementWorkSample(movementWorkService, sampleData, logger);
-            await RunCreateInventCountJournalSample(mesService, sampleData, logger);
-            await RunUpdateBatchDispositionSample(mesService, sampleData, logger);
+            if (filter is null or "start")
+                await RunStartProductionOrderSample(mesService, sampleData, logger);
+            if (filter is null or "material")
+                await RunMaterialConsumptionSample(mesService, sampleData, logger);
+            if (filter is null or "raf")
+                await RunReportAsFinishedSample(mesService, sampleData, logger);
+            if (filter is null or "end")
+                await RunEndProductionOrderSample(mesService, sampleData, logger);
+            if (filter is null or "movement")
+                await RunCreateMovementWorkSample(movementWorkService, sampleData, logger);
+            if (filter is null or "countjournal")
+                await RunCreateInventCountJournalSample(mesService, sampleData, logger);
+            if (filter is null or "batchdisposition")
+                await RunUpdateBatchDispositionSample(mesService, sampleData, logger);
 
             logger.LogInformation("\n=== All MES integration samples completed successfully ===");
         }
@@ -216,7 +234,7 @@ class Program
         var data = sampleData.InventCountJournal;
         var message = new InventCountJournalMessage
         {
-            ProductionOrderNumber = data.ProductionOrderNumber,
+            ProductionOrderNumber = sampleData.ProductionOrderNumber,
             ItemNumber = data.ItemNumber,
             Site = data.Site,
             Warehouse = data.Warehouse,
@@ -244,7 +262,7 @@ class Program
         var data = sampleData.UpdateBatchDisposition;
         var message = new UpdateBatchDispositionMessage
         {
-            ProductionOrderNumber = data.ProductionOrderNumber,
+            ProductionOrderNumber = sampleData.ProductionOrderNumber,
             ItemNumber = data.ItemNumber,
             BatchNumber = data.BatchNumber,
             DispositionCode = data.DispositionCode

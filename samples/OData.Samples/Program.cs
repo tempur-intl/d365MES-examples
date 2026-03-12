@@ -64,13 +64,28 @@ class Program
 
             var odataService = serviceProvider.GetRequiredService<ODataService>();
 
-            // Run samples
-            await RunTsiItemQuerySample(odataService, sampleQueries, logger);
-            await RunTsiProdBomLinesQuerySample(odataService, sampleQueries, logger);
-            await RunTsiLabelQuerySample(odataService, sampleQueries, logger);
-            await RunTsiJobQuerySample(odataService, sampleQueries, logger);
-            await RunWarehouseWorkLinesQuerySample(odataService, sampleQueries, logger);
-            await RunItemBatchesQuerySample(odataService, sampleQueries, logger);
+            // Optional: pass a sample name to run only that one, e.g.:
+            //   dotnet run items
+            //   dotnet run bomlines
+            //   dotnet run labels
+            //   dotnet run jobs
+            //   dotnet run worklines
+            //   dotnet run batches
+            // Omit the argument to run all samples.
+            var filter = args.Length > 0 ? args[0].ToLowerInvariant() : null;
+
+            if (filter is null or "items")
+                await RunTsiItemQuerySample(odataService, sampleQueries, logger);
+            if (filter is null or "bomlines")
+                await RunTsiProdBomLinesQuerySample(odataService, sampleQueries, logger);
+            if (filter is null or "labels")
+                await RunTsiLabelQuerySample(odataService, sampleQueries, logger);
+            if (filter is null or "jobs")
+                await RunTsiJobQuerySample(odataService, sampleQueries, logger);
+            if (filter is null or "worklines")
+                await RunWarehouseWorkLinesQuerySample(odataService, sampleQueries, logger);
+            if (filter is null or "batches")
+                await RunItemBatchesQuerySample(odataService, sampleQueries, logger);
 
             logger.LogInformation("\n=== All OData query samples completed successfully ===");
         }

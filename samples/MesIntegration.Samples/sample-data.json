@@ -1,7 +1,7 @@
 {
-  "productionOrderNumber": "10001147",
+  "productionOrderNumber": "10001003",
   "startedQuantity": 5,
-  "startedDate": "2024-01-15",
+  "startedDate": "2026-03-12",
   "automaticBOMConsumptionRule": "Never",
   "automaticRouteConsumptionRule": "Never",
   "pickingListJournalNameId": "Pick",
@@ -50,38 +50,36 @@
     "journalNameId": "RAF",
     "licensePlateNumber": "LP-2024-001",
     "itemBatchNumber": "FINISHED-001",
-    "productSerialNumber": "SN-2024-001",
+    "productSerialNumber": "",
     "endJob": "No",
     "endPickingList": "Yes",
     "endRouteCard": "Yes",
     "acceptError": "No",
     "generateLicensePlate": "No",
     "printLabel": "No",
-    "reportAsFinishedDate": "2024-01-15",
-    "executedDateTime": "2024-01-15T14:30:00Z"
+    "reportAsFinishedDate": "2026-03-12",
+    "executedDateTime": "2026-03-12T09:30:00Z"
   },
   "movementWork": {
-    "licensePlate": "LP-2024-001",
-    "sourceLocation": "Aisle01-Rack01-Shelf01",
-    "destinationLocation": "",
+    "licensePlate": "00001013023",
+    "sourceLocation": "103",
+    "destinationLocation": "100",
     "quantity": 0,
     "itemId": ""
   },
   "inventCountJournal": {
-    "productionOrderNumber": "10001147",
     "itemNumber": "20821",
     "site": "01",
     "warehouse": "010",
-    "batchNumber": "BATCH001",
-    "location": "Aisle01-Rack01-Shelf01",
-    "licensePlate": "LP-2024-001",
+    "batchNumber": "34212-1",
+    "location": "103",
+    "licensePlate": "00001013023",
     "countedQuantity": 10,
-    "countDate": "2024-01-15"
+    "countDate": "2026-03-12"
   },
   "updateBatchDisposition": {
-    "productionOrderNumber": "10001147",
-    "itemNumber": "20821",
-    "batchNumber": "BATCH001",
-    "dispositionCode": "Available"
+    "itemNumber": "6708",
+    "batchNumber": "12334-1",
+    "dispositionCode": "Quarantine"
   }
 }
