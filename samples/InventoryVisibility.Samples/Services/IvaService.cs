@@ -48,7 +48,7 @@ public class IvaService
     }
 
     /// <summary>
-    /// Query on-hand inventory for products
+    /// Query on-hand inventory for products. Retries on transient 500 partition-loading errors.
     /// </summary>
     public async Task<List<OnHandQueryResponse>> QueryOnHandAsync(
         OnHandQueryRequest request,
@@ -56,31 +56,49 @@ public class IvaService
     {
         _logger.LogInformation("Querying on-hand inventory");
 
-        using var httpRequest = await CreateAuthenticatedRequestAsync(
-            HttpMethod.Post,
-            "/onhand/indexquery",
-            cancellationToken);
+        int[] retryDelaysSeconds = { 10, 20 };
 
-        httpRequest.Content = JsonContent.Create(request);
-
-        _logger.LogInformation("Sending request to: {Url}", httpRequest.RequestUri);
-
-        var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+        for (int attempt = 0; ; attempt++)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogError(
-                "Query failed with status {Status}: {Error}",
-                response.StatusCode,
-                errorContent);
-            response.EnsureSuccessStatusCode();
+            using var httpRequest = await CreateAuthenticatedRequestAsync(
+                HttpMethod.Post,
+                "/onhand/indexquery",
+                cancellationToken);
+
+            httpRequest.Content = JsonContent.Create(request);
+
+            if (attempt == 0)
+                _logger.LogInformation("Sending request to: {Url}", httpRequest.RequestUri);
+
+            var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                if ((int)response.StatusCode == 500
+                    && errorContent.Contains("Waiting for partition")
+                    && attempt < retryDelaysSeconds.Length)
+                {
+                    _logger.LogWarning(
+                        "IVA partition is loading (attempt {Attempt}), retrying in {Delay}s...",
+                        attempt + 1, retryDelaysSeconds[attempt]);
+                    await Task.Delay(TimeSpan.FromSeconds(retryDelaysSeconds[attempt]), cancellationToken);
+                    continue;
+                }
+
+                _logger.LogError(
+                    "Query failed with status {Status}: {Error}",
+                    response.StatusCode,
+                    errorContent);
+                response.EnsureSuccessStatusCode();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<OnHandQueryResponse>>(
+                cancellationToken: cancellationToken) ?? new List<OnHandQueryResponse>();
+
+            _logger.LogInformation("Retrieved {Count} inventory records", result.Count);
+            return result;
         }
-
-        var result = await response.Content.ReadFromJsonAsync<List<OnHandQueryResponse>>(
-            cancellationToken: cancellationToken) ?? new List<OnHandQueryResponse>();
-
-        _logger.LogInformation("Retrieved {Count} inventory records", result.Count);
-        return result;
     }
 }
