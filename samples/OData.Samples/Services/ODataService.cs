@@ -161,7 +161,6 @@ public class ODataService
             HttpMethod.Get,
             "TSI_Labels",
             filter: filter,
-            select: "ProdId,LabelItemId,LabelSalesOrder,LabelEAN_Code,LabelMadeIn,LabelDateWeek,UDIUnit,HasUDI",
             expand: "Logos",
             cancellationToken: cancellationToken);
 

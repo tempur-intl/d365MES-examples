@@ -1064,14 +1064,23 @@ public class TSI_ProdBOMLine
 /// </summary>
 public class TSI_Label
 {
+    [JsonPropertyName("dataAreaId")]
+    public string DataAreaId { get; set; } = string.Empty;
+
     [JsonPropertyName("ProdId")]
     public string ProdId { get; set; } = string.Empty;
 
     [JsonPropertyName("LabelItemId")]
     public string LabelItemId { get; set; } = string.Empty;
 
+    [JsonPropertyName("LabelProdId")]
+    public string LabelProdId { get; set; } = string.Empty;
+
     [JsonPropertyName("LabelSalesOrder")]
     public string LabelSalesOrder { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelPurchOrderFormNum")]
+    public string LabelPurchOrderFormNum { get; set; } = string.Empty;
 
     [JsonPropertyName("LabelEAN_Code")]
     public string LabelEAN_Code { get; set; } = string.Empty;
@@ -1079,11 +1088,41 @@ public class TSI_Label
     [JsonPropertyName("LabelMadeIn")]
     public string LabelMadeIn { get; set; } = string.Empty;
 
+    [JsonPropertyName("LabelAddress")]
+    public string LabelAddress { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelAddressCountryRegionId")]
+    public string LabelAddressCountryRegionId { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelSalesAddressCountryRegionId")]
+    public string LabelSalesAddressCountryRegionId { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelConfigId")]
+    public string LabelConfigId { get; set; } = string.Empty;
+
     [JsonPropertyName("LabelDateWeek")]
     public string LabelDateWeek { get; set; } = string.Empty;
 
+    [JsonPropertyName("LabelDeliveryName")]
+    public string LabelDeliveryName { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelDlvTermTempur")]
+    public string LabelDlvTermTempur { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelItemFreeTxt")]
+    public string LabelItemFreeTxt { get; set; } = string.Empty;
+
+    [JsonPropertyName("LabelExternalItemId")]
+    public string LabelExternalItemId { get; set; } = string.Empty;
+
+    [JsonPropertyName("UDI")]
+    public string UDI { get; set; } = string.Empty;
+
     [JsonPropertyName("UDIUnit")]
     public string UDIUnit { get; set; } = string.Empty;
+
+    [JsonPropertyName("UDIRefRecId")]
+    public long UDIRefRecId { get; set; }
 
     [JsonPropertyName("HasUDI")]
     public int HasUDI { get; set; }
