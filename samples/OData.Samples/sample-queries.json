@@ -1,16 +1,16 @@
 {
   "tsiItems": {
-    "itemId": "83118466"
+    "itemId": "39328"
   },
   "tsiProdBomLines": {
-    "prodId": "10000035"
+    "prodId": "10000102"
   },
   "tsiLabels": {
-    "prodId": "10000035",
+    "prodId": "10000102",
     "udiUnit": "x1"
   },
   "tsiJobs": {
-    "prodId": "10000035"
+    "prodId": "10000102"
   },
   "warehouseWorkLines": {
     "filter": "dataAreaId eq '500' and WarehouseWorkStatus eq Microsoft.Dynamics.DataEntities.WHSWorkStatus'Open' and ItemNumber eq '83300244'",
