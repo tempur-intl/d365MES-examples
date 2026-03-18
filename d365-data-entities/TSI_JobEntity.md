@@ -68,7 +68,7 @@
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
-| `RecId` | Int64 | `ProdTable` | `RecId` | Yes | Primary key |
+| `dataAreaId` | String (4) | `ProdTable` | `dataAreaId` | Yes | Company identifier |
 | `ProdId` | String (20) | `ProdTable` | `ProdId` | Yes | Production order ID |
 | `ModuleRefId` | String (20) | `JmgJobTable` | `ModuleRefId` | No | Production order reference |
 | `ItemId` | String (20) | `InventTable` | `ItemId` | Yes | Item identifier |
@@ -76,21 +76,22 @@
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | Yes | Item name |
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias |
 | `DlvDateProd` | Date | `ProdTable` | `DlvDate` | No | Production delivery date |
-| `OprNum` | String (10) | `JmgJobTable` | `OprNum` | No | Operation number |
-| `WrkCtrId` | String (20) | Computed | `resource()` | No | Work centre ID for the primary route operation (OprNum 10, OprPriority Primary) |
+| `OprNum` | Integer | `JmgJobTable` | `OprNum` | No | Operation number |
+| `Qty` | Real | `ProdTable` | `Qty` | No | Production order quantity |
 | `Height` | Real | `InventTable` | `Height` | No | Item height |
 | `Width` | Real | `InventTable` | `Width` | No | Item width |
 | `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
 | `BlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | No | Block width (custom field) |
-| `ProdPrioText` | String (10) | `ProdTable` | `ProdPrio` | No | Production priority |
+| `Resource` | String (20) | Computed | `resource()` | No | Work centre resource for the primary route operation (OprNum 10, OprPriority Primary) |
+| `ProdPrioText` | Integer | `ProdTable` | `ProdPrio` | No | Production priority |
 | `TSIPuljeID` | Integer | `ProdTable` | `TSIPuljeID` | No | Pulje ID (custom field) |
+| `InventBatchId` | String (20) | `InventDim` | `InventBatchId` | No | Batch number from inventory dimensions |
 | `GreenHandNote` | String | Computed | `greenHandNote()` | No | Green hand note (computed field) |
 | `ItemNameConsumption` | String | Computed | `itemNameConsumption()` | No | Consumption text (computed field) |
 | `StandardPalletQuantity` | String | `WHSUOMSeqGroupLine` | `UnitId` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
 | `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `ProdStatus` | Enum | `ProdTable` | `ProdStatus` | No | Production status |
 | `TSIReadyForMes` | Enum | `ProdTable` | `TSIReadyForMes` | No | Ready for MES flag |
-| `dataAreaId` | String (4) | `ProdTable` | `dataAreaId` | Yes | Company identifier |
 
 ## Computed Fields
 
@@ -105,11 +106,11 @@ Retrieves the first consumption item from the production BOM that is associated 
 - If no record is found with Position, falls back to the first line ordered by LineNum
 - Joins ProdBOM, InventTable, and EcoResProductTranslation
 
-### WrkCtrId
-Returns the work centre for operation 10 on the production order, implemented as a `SysComputedColumn` SQL expression.
+### Resource
+Returns the work centre resource for operation 10 on the production order, implemented as a `SysComputedColumn` SQL expression.
 
 **Method**: `resource()` (static server)
-**Returns**: `WrkCtrId` from `ProdRouteSchedulingView`. Returns `NULL` if no matching route operation exists.
+**Returns**: `WrkCtrId` from `ProdRouteSchedulingView` (exposed as `Resource` in the OData response). Returns `NULL` if no matching route operation exists.
 
 **Logic**:
 ```sql
@@ -212,14 +213,18 @@ GET /data/TSI_Jobs?$filter=dataAreaId eq '500' and ItemId eq 'ITEM123'
 **Response Structure:**
 ```json
 {
-  "RecId": 123456,
+  "dataAreaId": "500",
   "ProdId": "PROD-001234",
   "ItemId": "ITEM123",
   "JobId": "JOB-12345",
   "ItemName": "Pillow Product",
   "ModuleRefId": "PROD-001234",
-  "OprNum": "10",
-  "dataAreaId": "500"
+  "OprNum": 10,
+  "Qty": 100,
+  "Resource": "Lim3",
+  "InventBatchId": "",
+  "ProdStatus": "Released",
+  "TSIReadyForMes": "No"
 }
 ```
 
@@ -233,7 +238,7 @@ GET /data/TSI_Labels?$filter=ProdId eq '{ProdId}'&$expand=Logos
 
 ```typescript
 export interface TSI_Job {
-  RecId: number;
+  dataAreaId: string;
   ProdId: string;
   ModuleRefId?: string;
   ItemId: string;
@@ -241,22 +246,22 @@ export interface TSI_Job {
   ItemName: string;
   NameAlias?: string;
   DlvDateProd?: string;
-  OprNum?: string;
-  WrkCtrId?: string;
-  InventBatchId?: string;
+  OprNum?: number;
+  Qty?: number;
   Height?: number;
   Width?: number;
   Depth?: number;
   BlockWidth?: number;
-  ProdPrioText?: string;
+  Resource?: string;
+  ProdPrioText?: number;
   TSIPuljeID?: number;
+  InventBatchId?: string;
   GreenHandNote?: string;
   ItemNameConsumption?: string;
   StandardPalletQuantity?: string;
   TSIShorteningLength?: number;
-  ProdStatus?: number;
-  TSIReadyForMes?: number;
-  dataAreaId: string;
+  ProdStatus?: string;
+  TSIReadyForMes?: string;
 }
 ```
 

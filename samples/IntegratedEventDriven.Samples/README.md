@@ -107,8 +107,8 @@ The service logs all details and marks the Service Bus message as complete.
 Event: ProductionOrderReleasedBusinessEvent for Production Order: 10001191
 
 Job Details (2 jobs):
-  - Job J0001: Item 83107273 at Work Center WC001
-  - Job J0002: Item 83107273 at Work Center WC002
+  - Job J0001: Item 83107273 on Resource Lim3
+  - Job J0002: Item 83107273 on Resource Karr1
 
 BOM Lines (11 materials):
   • 19503: 24 p1
