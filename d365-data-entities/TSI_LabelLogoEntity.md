@@ -21,6 +21,7 @@
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
+| `dataAreaId` | String (4) | `TSI_LabelLogoHelperView` | `dataAreaId` | Yes | Company identifier |
 | `ProdId` | String (20) | `TSI_LabelLogoHelperView` | `ProdId` | Yes | Production order ID (for filtering) |
 | `TSILogoId` | String | `TSI_LabelLogoHelperView` | `TSILogoId` | Yes | Logo identifier |
 | `TSILogoPath` | String | `TSI_LabelLogoHelperView` | `TSILogoPath` | Yes | File path to logo image |
@@ -118,6 +119,7 @@ GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
 {
   "value": [
     {
+      "dataAreaId": "500",
       "ProdId": "PROD-001234",
       "TSILogoId": "CEMD",
       "TSILogoPath": "\\\\server\\logos\\cemd.png",
@@ -125,6 +127,7 @@ GET /data/TSI_LabelLogos?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'
       "TSILogIdDescr": "CE Medical Device"
     },
     {
+      "dataAreaId": "500",
       "ProdId": "PROD-001234",
       "TSILogoId": "Triman",
       "TSILogoPath": "\\\\server\\logos\\triman.png",
@@ -170,6 +173,7 @@ GET /data/TSI_Labels?$filter=dataAreaId eq '500' and ProdId eq 'PROD-001234'&$ex
 
 ```typescript
 export interface TSI_LabelLogo {
+  dataAreaId: string;
   ProdId: string; // Production order ID
   TSILogoId: string;
   TSILogoPath: string;

@@ -318,12 +318,12 @@ export interface TSI_Label {
 }
 
 export interface TSI_LabelLogo {
-  RecId: number;
+  dataAreaId: string;
+  ProdId: string;
   TSILogoId: string;
   TSILogoPath: string;
   TSILogoPosition: number;
   TSILogIdDescr?: string;
-  dataAreaId: string;
 }
 ```
 

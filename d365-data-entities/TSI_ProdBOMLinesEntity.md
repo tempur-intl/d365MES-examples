@@ -55,13 +55,14 @@
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
+| `dataAreaId` | String (4) | `ProdBOM` | `dataAreaId` | Yes | Company identifier |
 | `ProdId` | String (20) | `ProdBOM` | `ProdId` | Yes | Production order ID |
 | `ItemId` | String (20) | `ProdBOM` | `ItemId` | Yes | Component item ID |
 | `LineNum` | Real | `ProdBOM` | `LineNum` | No | BOM line number |
 | `BOMQty` | Real | `ProdBOM` | `BOMQty` | No | Required quantity |
 | `BOMQtySerie` | Real | `ProdBOM` | `BOMQtySerie` | No | Series quantity |
 | `UnitId` | String (10) | `ProdBOM` | `UnitId` | No | Unit of measure |
-| `Position` | Integer | `ProdBOM` | `Position` | No | Position in BOM |
+| `Position` | String (10) | `ProdBOM` | `Position` | No | Position label in BOM (e.g. "plate1", "Plate2") |
 | `ScrapVar` | Real | `ProdBOM` | `ScrapVar` | No | Variable scrap percentage |
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | No | Item description (translated) |
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias name |
@@ -172,15 +173,17 @@ GET /data/TSI_ProdBOMLines?$filter=ProdId eq '000123'&$select=ItemId,ItemName,BO
 
 ```typescript
 export interface TSI_ProdBOMLine {
+  dataAreaId: string;
   ProdId: string;
   ItemId: string;
   LineNum: number;
   BOMQty: number;
   BOMQtySerie: number;
   UnitId: string;
-  Position: number;
+  Position: string;
   ScrapVar: number;
   ItemName: string;
+  ProdFlushingPrincip: string;
   NameAlias: string;
   ItemGroupId: string;
   Depth: number;
@@ -192,9 +195,8 @@ export interface TSI_ProdBOMLine {
   wMSLocationId: string;
   inventDimId: string;
   InventTransId: string;
-  InventRefType: number;
+  InventRefType: string;
   InventRefId: string;
-  ProdFlushingPrincip: number;
 }
 ```
 

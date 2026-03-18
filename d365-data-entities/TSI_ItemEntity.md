@@ -38,6 +38,7 @@
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
 |-----------|-----------|--------------|--------------|-----------|-------------|
+| `dataAreaId` | String (4) | `InventTable` | `dataAreaId` | Yes | Company identifier |
 | `ItemId` | String (20) | `InventTable` | `ItemId` | No | Item identifier |
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | No | Item name/description (translated) |
 | `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | No | Item group identifier |
@@ -115,19 +116,16 @@ GET /data/TSI_Items?$select=ItemId,ItemName,ItemGroupId,BOMUnitId
 
 ```typescript
 export interface TSI_Item {
+  dataAreaId: string;
   ItemId: string;
   ItemName: string;
   ItemGroupId: string;
-  ABCValue: number; // 0=A, 1=B, 2=C
+  ABCValue: string; // 'A', 'B', 'C'
   BOMUnitId: string;
 }
 
 // Helper for ABC classification
-export enum ABCClassification {
-  A = 0,
-  B = 1,
-  C = 2
-}
+export type ABCClassification = 'A' | 'B' | 'C';
 ```
 
 ## Implementation Checklist
