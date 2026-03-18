@@ -122,7 +122,7 @@ public class TSI_ProdBOMLine
     public string ItemId { get; set; } = string.Empty;
 
     [JsonPropertyName("LineNum")]
-    public int LineNum { get; set; }
+    public decimal LineNum { get; set; }
 
     [JsonPropertyName("BOMQty")]
     public decimal BOMQty { get; set; }
