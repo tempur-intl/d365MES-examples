@@ -1,7 +1,7 @@
 {
-  "productionOrderNumber": "10001003",
+  "productionOrderNumber": "10000102",
   "startedQuantity": 5,
-  "startedDate": "2026-03-12",
+  "startedDate": "2026-03-13",
   "automaticBOMConsumptionRule": "Never",
   "automaticRouteConsumptionRule": "Never",
   "pickingListJournalNameId": "Pick",
@@ -11,30 +11,30 @@
   "endRouteCard": "No",
   "materialConsumption": [
     {
-      "itemNumber": "20821",
-      "consumptionBOMQuantity": 2,
-      "consumptionBOMQuantityUnit": "p1",
-      "operationNumber": 10,
-      "productionSiteId": "01",
-      "productionWarehouseId": "010",
-      "consumptionDate": "2024-01-15",
-      "itemBatchNumber": "BATCH001",
-      "inventoryLotId": "LOT001"
-    },
-    {
-      "itemNumber": "20697",
+      "itemNumber": "7072",
       "consumptionBOMQuantity": 1,
       "consumptionBOMQuantityUnit": "p1",
       "operationNumber": 10,
       "productionSiteId": "01",
       "productionWarehouseId": "010",
-      "consumptionDate": "2024-01-15",
-      "itemBatchNumber": "BATCH002",
-      "inventoryLotId": "LOT002"
+      "consumptionDate": "2026-03-13",
+      "itemBatchNumber": "",
+      "inventoryLotId": ""
+    },
+    {
+      "itemNumber": "9860",
+      "consumptionBOMQuantity": 1,
+      "consumptionBOMQuantityUnit": "p1",
+      "operationNumber": 10,
+      "productionSiteId": "01",
+      "productionWarehouseId": "010",
+      "consumptionDate": "2026-03-13",
+      "itemBatchNumber": "",
+      "inventoryLotId": ""
     }
   ],
   "reportAsFinished": {
-    "itemNumber": "83107273",
+    "itemNumber": "39328",
     "reportedGoodQuantity": 1,
     "reportedErrorQuantity": 0,
     "errorCause": "",
@@ -42,14 +42,14 @@
     "toOperationNumber": 0,
     "productionSiteId": "01",
     "productionWarehouseId": "010",
-    "productionWarehouseLocationId": "Aisle01-Rack01-Shelf01",
+    "productionWarehouseLocationId": "",
     "automaticBOMConsumptionRule": "FlushingPrincip",
     "automaticRouteConsumptionRule": "Always",
     "pickingListJournalNameId": "Pick",
     "routeCardJournalNameId": "Route",
     "journalNameId": "RAF",
-    "licensePlateNumber": "LP-2024-001",
-    "itemBatchNumber": "FINISHED-001",
+    "licensePlateNumber": "",
+    "itemBatchNumber": "",
     "productSerialNumber": "",
     "endJob": "No",
     "endPickingList": "Yes",
@@ -57,8 +57,8 @@
     "acceptError": "No",
     "generateLicensePlate": "No",
     "printLabel": "No",
-    "reportAsFinishedDate": "2026-03-12",
-    "executedDateTime": "2026-03-12T09:30:00Z"
+    "reportAsFinishedDate": "2026-03-13",
+    "executedDateTime": "2026-03-13T09:30:00Z"
   },
   "movementWork": {
     "licensePlate": "00001013023",
@@ -75,7 +75,7 @@
     "location": "103",
     "licensePlate": "00001013023",
     "countedQuantity": 10,
-    "countDate": "2026-03-12"
+    "countDate": "2026-03-13"
   },
   "updateBatchDisposition": {
     "itemNumber": "6708",

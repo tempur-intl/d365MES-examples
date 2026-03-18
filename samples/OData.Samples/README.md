@@ -156,7 +156,7 @@ var jobs = await odataService.GetTsiJobsAsync(sampleQueries.TsiJobs.ProdId);
 foreach (var job in jobs)
 {
     Console.WriteLine($"Job: {job.JobId} - {job.ItemId}");
-    Console.WriteLine($"  Work Center: {job.WrkCtrId}");
+    Console.WriteLine($"  Resource: {job.Resource}");
     Console.WriteLine($"  Consumption: {job.ItemNameConsumption}");
 }
 ```
