@@ -397,6 +397,9 @@ public class TSI_Job
     [JsonPropertyName("OprNum")]
     public int OprNum { get; set; }
 
+    [JsonPropertyName("Qty")]
+    public decimal Qty { get; set; }
+
     [JsonPropertyName("Height")]
     public decimal Height { get; set; }
 
