@@ -105,6 +105,12 @@ public class TSI_Item
 
     [JsonPropertyName("BOMUnitId")]
     public string BOMUnitId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Legacy 3-character item group ID from AX2009 system
+    /// </summary>
+    [JsonPropertyName("ProdPoolId")]
+    public string ProdPoolId { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -150,6 +156,12 @@ public class TSI_ProdBOMLine
 
     [JsonPropertyName("ItemGroupId")]
     public string ItemGroupId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Legacy 3-character item group ID from AX2009 system
+    /// </summary>
+    [JsonPropertyName("ProdPoolId")]
+    public string ProdPoolId { get; set; } = string.Empty;
 
     [JsonPropertyName("Depth")]
     public decimal Depth { get; set; }
@@ -252,6 +264,21 @@ public class TSI_Label
 
     [JsonPropertyName("HasUDI")]
     public int HasUDI { get; set; }
+
+    [JsonPropertyName("GlobalTradeItemNumber")]
+    public string GlobalTradeItemNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("ISOcode")]
+    public string ISOcode { get; set; } = string.Empty;
+
+    [JsonPropertyName("CustAccount")]
+    public string CustAccount { get; set; } = string.Empty;
+
+    [JsonPropertyName("DefaultContainerTypeCode")]
+    public string DefaultContainerTypeCode { get; set; } = string.Empty;
+
+    [JsonPropertyName("QtySched")]
+    public decimal QtySched { get; set; }
 
     [JsonPropertyName("Logos")]
     public List<TSI_LabelLogo>? Logos { get; set; }
@@ -357,6 +384,9 @@ public class TSI_Job
 
     [JsonPropertyName("TSIReadyForMes")]
     public string TSIReadyForMes { get; set; } = string.Empty;
+
+    [JsonPropertyName("RemainInventPhysical")]
+    public decimal RemainInventPhysical { get; set; }
 }
 
 /// <summary>

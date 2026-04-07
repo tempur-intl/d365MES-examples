@@ -92,6 +92,7 @@
 | `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
 | `ProdStatus` | Enum | `ProdTable` | `ProdStatus` | No | Production status |
 | `TSIReadyForMes` | Enum | `ProdTable` | `TSIReadyForMes` | No | Ready for MES flag |
+| `RemainInventPhysical` | Real | `ProdTable` | `RemainInventPhysical` | No | Remaining physical inventory quantity |
 
 ## Computed Fields
 
@@ -224,7 +225,8 @@ GET /data/TSI_Jobs?$filter=dataAreaId eq '500' and ItemId eq 'ITEM123'
   "Resource": "Lim3",
   "InventBatchId": "",
   "ProdStatus": "Released",
-  "TSIReadyForMes": "No"
+  "TSIReadyForMes": "No",
+  "RemainInventPhysical": 100.0
 }
 ```
 
@@ -262,6 +264,7 @@ export interface TSI_Job {
   TSIShorteningLength?: number;
   ProdStatus?: string;
   TSIReadyForMes?: string;
+  RemainInventPhysical?: number;
 }
 ```
 

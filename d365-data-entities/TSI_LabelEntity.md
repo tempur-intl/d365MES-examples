@@ -75,6 +75,21 @@
 - UDI (Unique Device Identifier) lookup for production orders
 - **Note**: Multiple UDI records can exist per production order (one per unit). The entity will return **multiple rows per production order** when multiple units exist. Filter by `UDIUnit` on the client side to get a specific unit.
 
+### 14. InventItemGTIN
+- **Join Type**: Outer Join
+- **Join Condition**: `InventTable.ItemId == InventItemGTIN.ItemId`
+- Global Trade Item Numbers (GTIN/EAN-13) assigned to items
+
+### 15. WHSInventTable
+- **Join Type**: Outer Join
+- **Join Condition**: `InventTable.ItemId == WHSInventTable.ItemId`
+- Warehouse-specific item configuration
+
+### 16. WHSUOMSeqGroupLine
+- **Join Type**: Outer Join
+- **Join Condition**: `WHSInventTable.UOMSeqGroupId == WHSUOMSeqGroupLine.UOMSeqGroupId`
+- Unit sequence group lines for container type configuration
+
 ## Field Mappings
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
@@ -99,6 +114,11 @@
 | `UDIUnit` | String | `TSIUDI` | `Unit` | No | Unit for the UDI (e.g., 'x1', 'x10', 'x100') |
 | `UDIRefRecId` | Int64 | `TSIUDI` | `RecId` | No | UDI record reference ID |
 | `HasUDI` | Integer | Computed | `hasUDI()` | No | Indicates if UDI exists (1=yes, 0=no) |
+| `GlobalTradeItemNumber` | String (20) | `InventItemGTIN` | `GlobalTradeItemNumber` | No | GTIN barcode for the item |
+| `ISOcode` | String (2) | `LogisticsAddressCountryRegion` | `ISOcode` | No | ISO 3166-1 alpha-2 country code for item origin |
+| `CustAccount` | String (20) | `SalesTable` | `CustAccount` | No | Customer account number from the linked sales order |
+| `DefaultContainerTypeCode` | String (10) | `WHSUOMSeqGroupLine` | `DefaultContainerTypeCode` | No | Default container type code from unit sequence group |
+| `QtySched` | Real | `ProdTable` | `QtySched` | No | Scheduled quantity on the production order |
 | `dataAreaId` | String (4) | `ProdTable` | `dataAreaId` | Yes | Company identifier |
 
 ## Navigation Properties
@@ -237,6 +257,9 @@ The following fields are custom extensions and must be verified to exist in your
 - Read access to `DlvTerm`
 - Read access to `InventItemBarcode`
 - Read access to `TSIUDI`
+- Read access to `InventItemGTIN`
+- Read access to `WHSInventTable`
+- Read access to `WHSUOMSeqGroupLine`
 - Execute permission on `TSI_LabelEntity`
 - View permission for Sales and Job Management modules
 
@@ -313,6 +336,11 @@ export interface TSI_Label {
   UDIUnit?: string;
   UDIRefRecId?: number;
   HasUDI?: number;
+  GlobalTradeItemNumber?: string;
+  ISOcode?: string;
+  CustAccount?: string;
+  DefaultContainerTypeCode?: string;
+  QtySched?: number;
   dataAreaId: string;
   Logos?: TSI_LabelLogo[]; // Navigation property (use $expand=Logos)
 }

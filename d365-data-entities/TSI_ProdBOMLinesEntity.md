@@ -67,6 +67,7 @@
 | `ItemName` | String (60) | `EcoResProductTranslation` | `Name` | No | Item description (translated) |
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias name |
 | `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | No | Item group |
+| `ProdPoolId` | String (10) | `InventTable` | `ProdPoolId` | No | Legacy 3-character item group ID from AX2009 system |
 | `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
 | `Width` | Real | `InventTable` | `Width` | No | Item width |
 | `Height` | Real | `InventTable` | `Height` | No | Item height |
@@ -186,6 +187,7 @@ export interface TSI_ProdBOMLine {
   ProdFlushingPrincip: string;
   NameAlias: string;
   ItemGroupId: string;
+  ProdPoolId: string; // Legacy 3-character item group ID from AX2009
   Depth: number;
   Width: number;
   Height: number;

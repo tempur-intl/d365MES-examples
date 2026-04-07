@@ -44,6 +44,7 @@
 | `ItemGroupId` | String (10) | `InventItemGroupItem` | `ItemGroupId` | No | Item group identifier |
 | `ABCValue` | Enum | `InventTable` | `ABCValue` | No | ABC classification |
 | `BOMUnitId` | String (10) | `InventTable` | `BOMUnitId` | No | BOM unit of measure |
+| `ProdPoolId` | String (10) | `InventTable` | `ProdPoolId` | No | Legacy 3-character item group ID from AX2009 system |
 
 ## Query Filters
 
@@ -122,6 +123,7 @@ export interface TSI_Item {
   ItemGroupId: string;
   ABCValue: string; // 'A', 'B', 'C'
   BOMUnitId: string;
+  ProdPoolId: string; // Legacy 3-character item group ID from AX2009
 }
 
 // Helper for ABC classification
