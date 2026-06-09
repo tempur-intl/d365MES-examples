@@ -22,7 +22,7 @@ public class IntegratedService : IAsyncDisposable
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusReceiver _receiver;
     private const string ODataEndpoint = "/data";
-    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true, DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
 
     public IntegratedService(
         ServiceBusConfig serviceBusConfig,
