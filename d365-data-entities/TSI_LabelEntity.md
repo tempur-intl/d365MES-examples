@@ -47,48 +47,46 @@
 ### 8. LogisticsPostalAddress
 - **Join Type**: Outer Join
 - **Join Condition**: `SalesTable.DeliveryPostalAddress == LogisticsPostalAddress.RecId`
-- Delivery postal address details
+- Delivery postal address from the sales order
 
-### 9. CustTable
+### 9. LogisticsAddressCountryRegion1
+- **Join Type**: Outer Join
+- **Join Condition**: `LogisticsPostalAddress.CountryRegionId == LogisticsAddressCountryRegion1.CountryRegionId`
+- Second instance of `LogisticsAddressCountryRegion` (aliased as `LogisticsAddressCountryRegion1`); provides the ISO code for the sales delivery country
+
+### 10. CustTable
 - **Join Type**: Outer Join
 - **Join Condition**: `SalesTable.CustAccount == CustTable.AccountNum`
 - Customer details
 
-### 10. DlvTerm
+### 11. DlvTerm
 - **Join Type**: Outer Join
 - **Join Condition**: `SalesTable.DlvTerm == DlvTerm.Code`
 - Delivery terms text
 
-### 11. TSIUDI
+### 12. InventItemGTIN
+- **Join Type**: Outer Join
+- **Join Condition**: `ProdTable.ItemId == InventItemGTIN.ItemId AND ProdTable.InventDimId == InventItemGTIN.InventDimId`
+- **Filter**: `UnitId = x1`
+- Global Trade Item Numbers (GTIN/EAN-13) for the item and inventory dimension
+
+### 13. TSIUDI
 - **Join Type**: Outer Join
 - **Join Condition**: `ProdTable.ProdId == TSIUDI.ReferenceNumber AND ProdTable.ItemId == TSIUDI.ItemId AND InventDim.ConfigId == TSIUDI.ConfigId`
 - **Filter**: `ReferenceType == ProductionOrder`
 - UDI (Unique Device Identifier) lookup for production orders
 - **Note**: Multiple UDI records can exist per production order (one per unit). The entity will return **multiple rows per production order** when multiple units exist. Filter by `UDIUnit` on the client side to get a specific unit.
-- **Join Type**: Left Outer Join
-- **Join Condition**: Complex barcode lookup logic (see Barcode Logic section)
-- EAN codes
 
-### 13. TSIUDI
-- **Join Type**: Left Outer Join
-- **Join Condition**: `ProdTable.ProdId == TSIUDI.ReferenceNumber AND TSIUDI.ReferenceType == TSIReferenceType::ProductionOrder AND ProdTable.ItemId == TSIUDI.ItemId AND InventDim.ConfigId == TSIUDI.ConfigId`
-- UDI (Unique Device Identifier) lookup for production orders
-- **Note**: Multiple UDI records can exist per production order (one per unit). The entity will return **multiple rows per production order** when multiple units exist. Filter by `UDIUnit` on the client side to get a specific unit.
-
-### 14. InventItemGTIN
-- **Join Type**: Outer Join
-- **Join Condition**: `InventTable.ItemId == InventItemGTIN.ItemId`
-- Global Trade Item Numbers (GTIN/EAN-13) assigned to items
-
-### 15. WHSInventTable
+### 14. WHSInventTable
 - **Join Type**: Outer Join
 - **Join Condition**: `InventTable.ItemId == WHSInventTable.ItemId`
-- Warehouse-specific item configuration
+- Warehouse-specific item configuration (embedded under InventTable)
 
-### 16. WHSUOMSeqGroupLine
+### 15. WHSUOMSeqGroupLine
 - **Join Type**: Outer Join
 - **Join Condition**: `WHSInventTable.UOMSeqGroupId == WHSUOMSeqGroupLine.UOMSeqGroupId`
-- Unit sequence group lines for container type configuration
+- **Filter**: `LineNum == 3`
+- Unit sequence group line 3 for container type configuration
 
 ## Field Mappings
 
@@ -115,7 +113,7 @@
 | `UDIRefRecId` | Int64 | `TSIUDI` | `RecId` | No | UDI record reference ID |
 | `HasUDI` | Integer | Computed | `hasUDI()` | No | Indicates if UDI exists (1=yes, 0=no) |
 | `GlobalTradeItemNumber` | String (20) | `InventItemGTIN` | `GlobalTradeItemNumber` | No | GTIN barcode for the item |
-| `ISOcode` | String (2) | `LogisticsAddressCountryRegion` | `ISOcode` | No | ISO 3166-1 alpha-2 country code for item origin |
+| `ISOcode` | String (2) | `LogisticsAddressCountryRegion1` | `ISOcode` | No | ISO 3166-1 alpha-2 country code for the sales delivery country |
 | `CustAccount` | String (20) | `SalesTable` | `CustAccount` | No | Customer account number from the linked sales order |
 | `DefaultContainerTypeCode` | String (10) | `WHSUOMSeqGroupLine` | `DefaultContainerTypeCode` | No | Default container type code from unit sequence group |
 | `QtySched` | Real | `ProdTable` | `QtySched` | No | Scheduled quantity on the production order |
@@ -124,9 +122,9 @@
 ## Navigation Properties
 
 ### Logos (One-to-Many)
-- **Related Entity**: `TSI_LabelLogoEntity`
+- **Related Entity**: `TSI_LabelLogosEntity`
 - **Relationship**: One label can have multiple logos
-- **Foreign Key**: `RecId`
+- **Foreign Key**: `ProdId`
 - **Navigation Name**: `Logos`
 - **Usage**: Use `$expand=Logos` to retrieve applicable logos in the same call
 

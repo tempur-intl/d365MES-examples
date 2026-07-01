@@ -75,7 +75,7 @@
 | `TSIBlockWidth` | Real | `TSIInventTable` | `TSIBlockWidth` | No | Block width (custom field) |
 | `InventLocationId` | String (10) | `InventDim` | `InventLocationId` | No | Warehouse |
 | `wMSLocationId` | String (20) | `InventDim` | `wMSLocationId` | No | WMS location |
-| `inventDimId` | String (20) | `ProdBOM` | `inventDimId` | No | Dimension ID |
+| `inventDimId` | String (20) | `InventDim` | `inventDimId` | No | Dimension ID |
 | `InventTransId` | String (20) | `ProdBOM` | `InventTransId` | Yes | Transaction ID |
 | `InventRefType` | Enum | `ProdBOM` | `InventRefType` | No | Reference type |
 | `InventRefId` | String (20) | `ProdBOM` | `InventRefId` | No | Reference ID |

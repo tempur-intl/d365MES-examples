@@ -63,8 +63,6 @@
 - **Is Read Only**: Yes
 - **Primary Key**: EntityKey (ItemId)
 - **Primary Company Context**: DataAreaId
-- **Configuration Key**: LogisticsBasic
-- **Form Reference**: EcoResProductInformation
 - **Label**: @TSI:ItemsEntityMES
 - **Public Collection Name**: TSI_Items
 - **Public Entity Name**: TSI_Item

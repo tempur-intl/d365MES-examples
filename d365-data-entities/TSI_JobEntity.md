@@ -64,6 +64,10 @@
 - **Join Type**: Correlated subquery (not a data source join)
 - `WrkCtrId` is resolved by a `SysComputedColumn` SQL expression; see the Computed Fields section for details
 
+### 12. WrkCtrResourceGroupResource (via SQL subquery)
+- **Join Type**: Correlated subquery (not a data source join)
+- `OutputWMSLocationId` is resolved by a `SysComputedColumn` SQL expression using the same `WrkCtrId` from `ProdRouteSchedulingView`; see the Computed Fields section for details
+
 ## Field Mappings
 
 | Field Name | Data Type | Source Table | Source Field | Mandatory | Description |
@@ -77,7 +81,7 @@
 | `NameAlias` | String (60) | `InventTable` | `NameAlias` | No | Item alias |
 | `DlvDateProd` | Date | `ProdTable` | `DlvDate` | No | Production delivery date |
 | `OprNum` | Integer | `JmgJobTable` | `OprNum` | No | Operation number |
-| `Qty` | Real | `ProdTable` | `Qty` | No | Production order quantity |
+| `Qty` | Real | `ProdTable` | `QtySched` | No | Production order quantity |
 | `Height` | Real | `InventTable` | `Height` | No | Item height |
 | `Width` | Real | `InventTable` | `Width` | No | Item width |
 | `Depth` | Real | `InventTable` | `Depth` | No | Item depth/length |
@@ -93,6 +97,8 @@
 | `ProdStatus` | Enum | `ProdTable` | `ProdStatus` | No | Production status |
 | `TSIReadyForMes` | Enum | `ProdTable` | `TSIReadyForMes` | No | Ready for MES flag |
 | `RemainInventPhysical` | Real | `ProdTable` | `RemainInventPhysical` | No | Remaining physical inventory quantity |
+| `OutputWMSLocationId` | String (20) | Computed | `outputWMSLocationId()` | No | Output WMS location ID for the work centre resource group |
+| `CountryRegionId` | String (10) | `TSIProdTable` | `TSICountry` | No | Country/region code from the production order (custom field) |
 
 ## Computed Fields
 
@@ -125,16 +131,37 @@ WHERE prs.ProdId      = <JmgJobTable.ModuleRefId>
 - `OprNum` is hardcoded to `10`
 - `OprPriority` is hardcoded to `Primary` (`enum2int(RouteOprPriority::Primary)`)
 
-### GreenHandNote
-Retrieves concatenated notes from the DocuRef table associated with the job record.
+### OutputWMSLocationId
+Returns the output WMS location for the work centre resolved by the primary route operation, implemented as a `SysComputedColumn` SQL expression.
 
-**Method**: `greenHandNote()`
-**Returns**: Concatenated notes separated by " / " from DocuRef records linked to the JmgJobTable record.
+**Method**: `outputWMSLocationId()` (static server)
+**Returns**: `OutputWMSLocationId` from `WrkCtrResourceGroupResource` for the work centre from operation 10. Returns `NULL` if no matching route operation or resource group record exists.
 
 **Logic**:
-- Queries DocuRef table where RefRecId = JmgJobTable.RecId
-- Filters by RefCompanyId = dataAreaId and RefTableId = JmgJobTable table ID
-- Orders by CreatedDateTime and concatenates Notes fields
+```sql
+SELECT TOP 1 rg.OutputWMSLocationId
+FROM WrkCtrResourceGroupResource rg
+WHERE rg.WrkCtrId = (
+    SELECT TOP 1 prs.WrkCtrId
+    FROM ProdRouteSchedulingView prs
+    WHERE prs.ProdId      = <JmgJobTable.ModuleRefId>
+      AND prs.OprNum      = 10
+      AND prs.OprPriority = 0  -- RouteOprPriority::Primary
+)
+```
+- `WrkCtrId` is resolved via the same `ProdRouteSchedulingView` subquery as `resource()`
+- `JmgJobTable.ModuleRefId` is sourced via `SysComputedColumn::returnField`
+
+### GreenHandNote
+Retrieves concatenated notes from the DocuRef table associated with the production order record.
+
+**Method**: `greenHandNote()` (private static)
+**Returns**: Concatenated notes separated by " / " from DocuRef records linked to the ProdTable record. Uses `STUFF`/`FOR XML PATH` to aggregate multiple rows into a single value.
+
+**Logic**:
+- Queries DocuRef table where RefRecId = ProdTable.RecId
+- Filters by RefCompanyId = ProdTable.DataAreaId and RefTableId = tableNum(ProdTable)
+- Orders by CreatedDateTime and concatenates non-null Notes fields
 
 A query range is applied at the entity level to filter jobs with JobStatus = Started. Additional filtering is based on the joined data sources.
 
@@ -147,6 +174,7 @@ The following fields are custom extensions and must be verified to exist in your
 
 ### TSIProdTable Custom Fields
 - `TSIShorteningLength`
+- `TSICountry`
 
 ### TSIInventTable Custom Fields
 - `TSIBlockWidth`
@@ -265,6 +293,8 @@ export interface TSI_Job {
   ProdStatus?: string;
   TSIReadyForMes?: string;
   RemainInventPhysical?: number;
+  OutputWMSLocationId?: string;
+  CountryRegionId?: string;
 }
 ```
 
