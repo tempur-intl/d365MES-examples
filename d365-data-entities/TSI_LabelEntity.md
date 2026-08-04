@@ -99,6 +99,7 @@
 | `LabelConfigId` | String (10) | `InventDim` | `ConfigId` | No | Configuration |
 | `LabelDateWeek` | String | Computed | `labelDateWeek()` | No | Date and week formatted (yyyy-mm-dd (week)) |
 | `LabelDeliveryName` | String (60) | `SalesLine` | `DeliveryName` | No | Delivery name |
+| `LabelDlvMode` | String (10) | `SalesLine` | `DlvMode` | No | Mode of delivery code |
 | `LabelDlvTermTempur` | String | `DlvTerm` | `Txt` | No | Delivery term text |
 | `LabelItemFreeTxt` | String (60) | `SalesLine` | `Name` | No | Free text |
 | `LabelItemId` | String (20) | `ProdTable` | `ItemId` | Yes | Item ID |
