@@ -178,6 +178,10 @@ public class BusinessEventEnvelope
 
     [JsonPropertyName("BusinessEvent")]
     public string? BusinessEvent { get; set; }
+
+    /// <summary>True when the order was released to the MES; false when it was removed from the MES.</summary>
+    [JsonPropertyName("ReadyForMES")]
+    public bool? ReadyForMES { get; set; }
 }
 
 /// <summary>
@@ -224,11 +228,16 @@ public abstract class TSIBusinessEventBase
 
     [JsonPropertyName("Resource")]
     public string? Resource { get; set; }
+
+    /// <summary>True when the order was released to the MES; false when it was removed from the MES.</summary>
+    [JsonPropertyName("ReadyForMES")]
+    public bool? ReadyForMES { get; set; }
 }
 
 /// <summary>
-/// Fired when a production order has been finalised/scheduled and is ready for the MES to pick up.
-/// The MES should fetch the full order data via OData on receipt of this event.
+/// Fired when a production order is released to the MES (<c>ReadyForMES: true</c>) or removed from
+/// the MES (<c>ReadyForMES: false</c>). The MES should fetch full order data via OData when released,
+/// and remove/cancel its local job record when <c>ReadyForMES</c> is false.
 /// </summary>
 public class TSIProductionOrderReleasedToMESBusinessEvent : TSIBusinessEventBase
 {

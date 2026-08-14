@@ -29,7 +29,7 @@ sequenceDiagram
     participant IVA as Inventory Visibility
     participant LN as Lasernet
 
-    Note over D365,MES: Order Released
+    Note over D365,MES: Order Released (ReadyForMES: true)
     D365->>MES: TSIProductionOrderReleasedToMESBusinessEvent
     MES->>D365: OData: TSI_Jobs
     D365-->>MES: Job details
@@ -41,6 +41,10 @@ sequenceDiagram
     D365-->>MES: Label data
     MES->>IVA: Query on-hand inventory
     IVA-->>MES: On-hand quantities
+
+    Note over D365,MES: Order Removed from MES (ReadyForMES: false)
+    D365->>MES: TSIProductionOrderReleasedToMESBusinessEvent
+    MES->>MES: Remove/cancel local job record (no OData lookup)
 
     Note over D365,MES: Order Updated
     D365->>MES: TSIProductionOrderUpdatedMESEvent
@@ -120,16 +124,16 @@ OData endpoint examples for TSI custom entities and warehouse operations:
 
 ### 5. **ServiceBusEvents.Samples**
 Azure Service Bus event consumer for D365 business events:
-- ✅ Consume TSI production order events (released and updated)
+- ✅ Consume TSI production order events (released/removed and updated)
 - ✅ Poll once mode (testing) or continuous listening (production)
 - ✅ Dead letter queue inspection
 - ✅ Automatic retry with DLQ handling
 
 ### 6. **IntegratedEventDriven.Samples**
 Combined Service Bus + OData integration:
-- ✅ Receive TSIProductionOrderReleasedToMESBusinessEvent
-- ✅ Extract ProductionOrderNumber and Resource from event
-- ✅ Query OData with filtered request for specific order
+- ✅ Receive TSIProductionOrderReleasedToMESBusinessEvent (release or removal, via `ReadyForMES`)
+- ✅ Extract ProductionOrderNumber, Resource, and ReadyForMES from event
+- ✅ Query OData with filtered request for specific order when released
 - ✅ Retrieve BOM lines and related data
 - ✅ Demonstrates complete event-driven workflow
 

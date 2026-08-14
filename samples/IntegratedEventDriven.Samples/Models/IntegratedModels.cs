@@ -95,6 +95,10 @@ public class BusinessEventEnvelope
 
     [JsonPropertyName("ProductionOrderType")]
     public string? ProductionOrderType { get; set; }
+
+    /// <summary>True when the order was released to the MES; false when it was removed from the MES.</summary>
+    [JsonPropertyName("ReadyForMES")]
+    public bool? ReadyForMES { get; set; }
 }
 
 /// <summary>
@@ -102,7 +106,7 @@ public class BusinessEventEnvelope
 /// </summary>
 public static class TSIBusinessEventTypes
 {
-    /// <summary>Production order has been finalised and released to the MES. MES should fetch full order data via OData.</summary>
+    /// <summary>Production order released to (ReadyForMES: true) or removed from (ReadyForMES: false) the MES.</summary>
     public const string ProductionOrderReleasedToMES = "TSIProductionOrderReleasedToMESBusinessEvent";
 
     /// <summary>A previously released production order has been updated; the MES should refresh its local data.</summary>

@@ -98,28 +98,42 @@ public class IntegratedService : IAsyncDisposable
                 _logger.LogInformation("Event Type: {EventType}", businessEvent.BusinessEventId);
                 _logger.LogInformation("Production Order: {OrderNumber}", businessEvent.ProductionOrderNumber);
                 _logger.LogInformation("Resource: {Resource}", businessEvent.Resource);
+                _logger.LogInformation("Ready For MES: {ReadyForMES}", businessEvent.ReadyForMES);
 
-                // Step 2: Query job details using OData (ProdId = ProductionOrderNumber in D365)
                 var prodId = businessEvent.ProductionOrderNumber!;
-                var jobs = await GetJobsAsync(prodId, cancellationToken);
 
-                if (jobs.Any())
+                // ReadyForMES distinguishes a release (true) from a removal (false) of the order in GO
+                if (businessEvent.ReadyForMES == false)
                 {
-                    _logger.LogInformation("Job Details ({Count} jobs):", jobs.Count);
-                    var jobsJson = JsonSerializer.Serialize(jobs, _jsonOptions);
-                    Console.WriteLine(jobsJson);
+                    _logger.LogInformation("Production order {OrderNumber} was removed from MES — no OData lookup needed",
+                        businessEvent.ProductionOrderNumber);
 
-                    // Step 3: Query BOM lines
-                    var bomLines = await GetBomLinesAsync(prodId, cancellationToken);
-
-                    _logger.LogInformation("\nBOM Lines ({Count} materials):", bomLines.Count);
-                    var bomLinesJson = JsonSerializer.Serialize(bomLines, _jsonOptions);
-                    Console.WriteLine(bomLinesJson);
+                    // Step 2 (removal path): remove/cancel the local job record for this order
+                    // e.g. await _mesJobStore.RemoveAsync(prodId, cancellationToken);
                 }
                 else
                 {
-                    _logger.LogWarning("No jobs found for production order {OrderNumber}",
-                        businessEvent.ProductionOrderNumber);
+                    // Step 2: Query job details using OData (ProdId = ProductionOrderNumber in D365)
+                    var jobs = await GetJobsAsync(prodId, cancellationToken);
+
+                    if (jobs.Any())
+                    {
+                        _logger.LogInformation("Job Details ({Count} jobs):", jobs.Count);
+                        var jobsJson = JsonSerializer.Serialize(jobs, _jsonOptions);
+                        Console.WriteLine(jobsJson);
+
+                        // Step 3: Query BOM lines
+                        var bomLines = await GetBomLinesAsync(prodId, cancellationToken);
+
+                        _logger.LogInformation("\nBOM Lines ({Count} materials):", bomLines.Count);
+                        var bomLinesJson = JsonSerializer.Serialize(bomLines, _jsonOptions);
+                        Console.WriteLine(bomLinesJson);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No jobs found for production order {OrderNumber}",
+                            businessEvent.ProductionOrderNumber);
+                    }
                 }
 
                 // Step 4: Complete the message

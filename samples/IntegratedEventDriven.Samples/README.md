@@ -3,9 +3,10 @@
 This sample demonstrates a complete event-driven integration workflow combining Service Bus events with OData queries. It shows how to:
 
 1. **Receive** a `TSIProductionOrderReleasedToMESBusinessEvent` from Azure Service Bus
-2. **Extract** the `ProductionOrderNumber` and `Resource` from the event
-3. **Query** D365 OData API to get job details using TSI_Jobs entity
-4. **Retrieve** related BOM lines using TSI_ProdBOMLines entity
+2. **Check** the `ReadyForMES` field to determine whether the order was released (`true`) or removed (`false`)
+3. **Extract** the `ProductionOrderNumber` and `Resource` from the event
+4. **Query** D365 OData API to get job details using TSI_Jobs entity (when released)
+5. **Retrieve** related BOM lines using TSI_ProdBOMLines entity (when released)
 
 ## 📋 Prerequisites
 
@@ -64,19 +65,22 @@ When a production order is released in D365, a business event is published:
 
 ```json
 {
-  "BusinessEventId": "ProductionOrderReleasedBusinessEvent",
+  "BusinessEventId": "TSIProductionOrderReleasedToMESBusinessEvent",
   "EventTime": "/Date(1764240678000)/",
   "LegalEntity": "500",
   "ProductionOrderNumber": "10001191",
-  "ProductionOrderType": "Standard"
+  "Resource": "Lim3",
+  "ReadyForMES": true
 }
 ```
+
+When the order is later removed from Go, the same event fires with `ReadyForMES: false` and no OData lookup is performed.
 
 ### 2. Extract Production Order Number
 
 The service parses the event and extracts `ProductionOrderNumber: 10001191`.
 
-### 3. Query OData with Filter
+### 3. Query OData with Filter (when `ReadyForMES: true`)
 
 The service makes OData requests with filters:
 
@@ -85,7 +89,7 @@ GET /data/TSI_Jobs?$filter=ProdId eq '10001191' and dataAreaId eq '500'
 Authorization: Bearer {token}
 ```
 
-**Key Point**: The service uses `ProdId` (which equals `ProductionOrderNumber` in D365) to query job details.
+**Key Point**: The service uses `ProdId` (which equals `ProductionOrderNumber` in D365) to query job details. If `ReadyForMES` is `false`, this step (and step 4) is skipped — the service instead removes/cancels its local job record for the order.
 
 ### 4. Get Related Data
 
@@ -104,7 +108,8 @@ The service logs all details and marks the Service Bus message as complete.
 
 ```
 === Processing Message 4eba91037fcbf011bbd37c1e52617b2f ===
-Event: ProductionOrderReleasedBusinessEvent for Production Order: 10001191
+Event: TSIProductionOrderReleasedToMESBusinessEvent for Production Order: 10001191
+Ready For MES: True
 
 Job Details (2 jobs):
   - Job J0001: Item 83107273 on Resource Lim3
@@ -117,6 +122,17 @@ BOM Lines (11 materials):
   • 49001: 3.34 kg
   • 14903: 4 p1
   ... and 6 more
+
+✓ Message processed successfully
+```
+
+When `ReadyForMES` is `false`, the output instead shows:
+
+```
+=== Processing Message 7c1e52617b2f4eba91037fcb ===
+Event: TSIProductionOrderReleasedToMESBusinessEvent for Production Order: 10001191
+Ready For MES: False
+Production order 10001191 was removed from MES — no OData lookup needed
 
 ✓ Message processed successfully
 ```

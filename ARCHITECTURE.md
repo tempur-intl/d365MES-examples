@@ -546,23 +546,32 @@ Not all production orders in D365 are managed by the MES — only a subset are r
 
 | Event | BusinessEventId | Purpose |
 |-------|----------------|---------|
-| Released to MES | `TSIProductionOrderReleasedToMESBusinessEvent` | Fired when an order is finalised/scheduled and ready for the MES to pick up |
+| Released to MES | `TSIProductionOrderReleasedToMESBusinessEvent` | Fired when an order is released/removed to/from the MES (see `ReadyForMES` below) |
 | Order Updated | `TSIProductionOrderUpdatedMESEvent` | Fired when a previously released order is changed (qty, schedule, etc.) and the MES should refresh its data |
 
 **The `TSIReadyForMes` field is the gate.** Both custom events are configured in D365 to fire only when the `TSIReadyForMes` flag on `ProdTable` is set. If an order is not flagged for MES handling, neither event fires and the MES never sees it.
+
+**The `ReadyForMES` payload field distinguishes release from removal.** `TSIProductionOrderReleasedToMESBusinessEvent` now fires in two cases, disambiguated by the boolean `ReadyForMES` field in the event body:
+
+| `ReadyForMES` | Meaning | MES action |
+|---|---|---|
+| `true` | Order was released to Go (MES) | Fetch full order data via OData (jobs, BOM lines, etc.) and schedule the order |
+| `false` | Order was removed from Go (MES) | Remove/cancel the local job record; no OData lookup is needed |
 
 **Data flow on event receipt:**
 
 ```mermaid
 flowchart TD
-    A["TSIProductionOrderReleasedToMESBusinessEvent received"] --> B["Extract ProductionOrderNumber + Resource from envelope"]
-    B --> C["Query TSI_Jobs OData entity\n(filtered by ProdId)"]
-    C --> D["Query TSI_ProdBOMLines OData entity\n(filtered by ProdId)"]
-    D --> E["(Optional) Query TSI_Labels for label printing data"]
-    E --> F["MES schedules and starts the order"]
+    A["TSIProductionOrderReleasedToMESBusinessEvent received"] --> B["Extract ProductionOrderNumber + Resource + ReadyForMES from envelope"]
+    B --> C{"ReadyForMES?"}
+    C -->|"true (Released)"| D["Query TSI_Jobs OData entity\n(filtered by ProdId)"]
+    D --> E["Query TSI_ProdBOMLines OData entity\n(filtered by ProdId)"]
+    E --> F["(Optional) Query TSI_Labels for label printing data"]
+    F --> G["MES schedules and starts the order"]
+    C -->|"false (Removed)"| H["MES removes/cancels the local job record"]
 ```
 
-The event payload itself is intentionally minimal (order number + resource). Full order data is always fetched fresh via OData immediately after the event is received. This keeps the events lightweight and ensures the MES always has the latest D365 data.
+The event payload itself is intentionally minimal (order number, resource, `ReadyForMES` flag). When `ReadyForMES` is `true`, full order data is always fetched fresh via OData immediately after the event is received. This keeps the events lightweight and ensures the MES always has the latest D365 data.
 
 **D365 date format**: D365 business event payloads encode dates in the legacy format `/Date(milliseconds)/` (e.g. `/Date(1718000000000)/`). `BusinessEventModels.cs` includes a custom `D365DateTimeConverter` that transparently handles this when deserializing event envelopes.
 
