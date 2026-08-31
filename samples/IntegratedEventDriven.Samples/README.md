@@ -5,7 +5,7 @@ This sample demonstrates a complete event-driven integration workflow combining 
 1. **Receive** a `TSIProductionOrderReleasedToMESBusinessEvent` from Azure Service Bus
 2. **Check** the `ReadyForMES` field to determine whether the order was released (`true`) or removed (`false`)
 3. **Extract** the `ProductionOrderNumber` and `Resource` from the event
-4. **Query** D365 OData API to get job details using TSI_Jobs entity (when released)
+4. **Query** D365 OData API to get job details using TSI_Jobs entity, expanded with `Notes` (when released)
 5. **Retrieve** related BOM lines using TSI_ProdBOMLines entity (when released)
 
 ## 📋 Prerequisites
@@ -85,11 +85,11 @@ The service parses the event and extracts `ProductionOrderNumber: 10001191`.
 The service makes OData requests with filters:
 
 ```http
-GET /data/TSI_Jobs?$filter=ProdId eq '10001191' and dataAreaId eq '500'
+GET /data/TSI_Jobs?$filter=ProdId eq '10001191' and dataAreaId eq '500'&$expand=Notes
 Authorization: Bearer {token}
 ```
 
-**Key Point**: The service uses `ProdId` (which equals `ProductionOrderNumber` in D365) to query job details. If `ReadyForMES` is `false`, this step (and step 4) is skipped — the service instead removes/cancels its local job record for the order.
+**Key Point**: The service uses `ProdId` (which equals `ProductionOrderNumber` in D365) to query job details. The `$expand=Notes` retrieves any notes attached to the production order — this replaces the deprecated `GreenHandNote` computed field, which was removed due to performance problems. If `ReadyForMES` is `false`, this step (and step 4) is skipped — the service instead removes/cancels its local job record for the order.
 
 ### 4. Get Related Data
 

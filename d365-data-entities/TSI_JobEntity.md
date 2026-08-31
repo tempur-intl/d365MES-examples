@@ -90,7 +90,6 @@
 | `ProdPrioText` | Integer | `ProdTable` | `ProdPrio` | No | Production priority |
 | `TSIPuljeID` | Integer | `ProdTable` | `TSIPuljeID` | No | Pulje ID (custom field) |
 | `InventBatchId` | String (20) | `InventDim` | `InventBatchId` | No | Batch number from inventory dimensions |
-| `GreenHandNote` | String | Computed | `greenHandNote()` | No | Green hand note (computed field) |
 | `ItemNameConsumption` | String | Computed | `itemNameConsumption()` | No | Consumption text (computed field) |
 | `StandardPalletQuantity` | String | `WHSUOMSeqGroupLine` | `UnitId` | No | Standard pallet quantity (from unit sequence group lineno == 3) |
 | `TSIShorteningLength` | Real | `TSIProdTable` | `TSIShorteningLength` | No | Shortening length (custom field) |
@@ -152,18 +151,9 @@ WHERE rg.WrkCtrId = (
 - `WrkCtrId` is resolved via the same `ProdRouteSchedulingView` subquery as `resource()`
 - `JmgJobTable.ModuleRefId` is sourced via `SysComputedColumn::returnField`
 
-### GreenHandNote
-Retrieves concatenated notes from the DocuRef table associated with the production order record.
-
-**Method**: `greenHandNote()` (private static)
-**Returns**: Concatenated notes separated by " / " from DocuRef records linked to the ProdTable record. Uses `STUFF`/`FOR XML PATH` to aggregate multiple rows into a single value.
-
-**Logic**:
-- Queries DocuRef table where RefRecId = ProdTable.RecId
-- Filters by RefCompanyId = ProdTable.DataAreaId and RefTableId = tableNum(ProdTable)
-- Orders by CreatedDateTime and concatenates non-null Notes fields
-
 A query range is applied at the entity level to filter jobs with JobStatus = Started. Additional filtering is based on the joined data sources.
+
+> **Deprecated**: The `GreenHandNote` computed field was removed due to performance problems. Notes are now retrieved from a related entity via the `Notes` navigation property — see [Navigation Properties](#navigation-properties) below.
 
 ## Custom Fields Verification Required
 
@@ -181,12 +171,58 @@ The following fields are custom extensions and must be verified to exist in your
 
 ### JmgJobTable Custom Fields
 - `ItemNameConsumption`
-- `GreenHandNote`
 
 ### Unit Sequence Group Configuration
 - **StandardPalletQuantity** is retrieved from `WHSUOMSeqGroupLine` where `LineNum == 3`
 - Ensure items have unit sequence groups configured with Line 3 for pallet quantities
 - This replaces the deprecated `InventTable.StandardPalletQuantity` field
+
+## Navigation Properties
+
+### Notes (One-to-Many)
+- **Related Entity**: Note document entity (DocuRef-backed, one record per note attached to the production order)
+- **Relationship**: One job/production order can have multiple notes
+- **Foreign Key**: `ProdId`
+- **Navigation Name**: `Notes`
+- **Usage**: Use `$expand=Notes` to retrieve all notes for the production order in the same call
+
+**Example:**
+```
+GET /data/TSI_Jobs?$filter=dataAreaId eq '500' and ProdId eq '10000761'&$expand=Notes
+```
+
+**Response Structure:**
+```json
+{
+  "dataAreaId": "500",
+  "ProdId": "10000761",
+  "Notes": [
+    {
+      "dataAreaId": "500",
+      "DocumentId": "96aeece7-35a9-419b-baaf-3e14fce9a5ed",
+      "ProdId": "10000761",
+      "GreenHandNote": "Hi from the All produciton orders"
+    },
+    {
+      "dataAreaId": "500",
+      "DocumentId": "49bc3241-7a19-47e6-a394-d9c28d36f498",
+      "ProdId": "10000761",
+      "GreenHandNote": "Test TomJas notes"
+    }
+  ]
+}
+```
+
+**Note fields:**
+
+| Field Name | Data Type | Description |
+|-----------|-----------|-------------|
+| `dataAreaId` | String (4) | Company identifier |
+| `DocumentId` | Guid | Unique identifier of the note document (DocuRef record) |
+| `ProdId` | String (20) | Production order ID (foreign key to the parent job) |
+| `GreenHandNote` | String | The note text. Field name retained from the original computed field for continuity, but this now comes from a related record rather than a concatenated/computed value |
+
+**Note**: Each note is returned as its own record (no more `STUFF`/`FOR XML PATH` concatenation), so a production order with multiple notes returns multiple entries in the `Notes` array instead of a single " / "-joined string.
 
 ## Entity Properties
 
@@ -264,9 +300,22 @@ Query TSI_LabelEntity separately using the ProdId:
 GET /data/TSI_Labels?$filter=ProdId eq '{ProdId}'&$expand=Logos
 ```
 
+**For Notes Data:**
+Use `$expand=Notes` on this entity to retrieve all notes for the production order:
+```
+GET /data/TSI_Jobs?$filter=ProdId eq '{ProdId}'&$expand=Notes
+```
+
 ## TypeScript Interface
 
 ```typescript
+export interface TSI_JobNote {
+  dataAreaId: string;
+  DocumentId: string;
+  ProdId: string;
+  GreenHandNote: string;
+}
+
 export interface TSI_Job {
   dataAreaId: string;
   ProdId: string;
@@ -286,7 +335,6 @@ export interface TSI_Job {
   ProdPrioText?: number;
   TSIPuljeID?: number;
   InventBatchId?: string;
-  GreenHandNote?: string;
   ItemNameConsumption?: string;
   StandardPalletQuantity?: string;
   TSIShorteningLength?: number;
@@ -295,6 +343,7 @@ export interface TSI_Job {
   RemainInventPhysical?: number;
   OutputWMSLocationId?: string;
   CountryRegionId?: string;
+  Notes?: TSI_JobNote[]; // Navigation property (use $expand=Notes)
 }
 ```
 
@@ -348,3 +397,4 @@ WHERE pt.DataAreaId = '500'
 - **MES Integration**: For label printing, query TSI_LabelEntity separately using ProdId from this entity
 - Use: `GET /data/TSI_Labels?$filter=ProdId eq '{ProdId}'&$expand=Logos` to get label data with logos
 - Jobs and Labels are separate queries - no navigation property between them
+- **`GreenHandNote` removed**: the computed field was removed due to performance problems with the concatenation logic. Notes are now retrieved via `$expand=Notes` (see [Navigation Properties](#navigation-properties)), returning one record per note instead of a single concatenated string

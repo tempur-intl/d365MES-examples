@@ -197,7 +197,7 @@ public class IntegratedService : IAsyncDisposable
             var token = await _tokenProvider.GetD365TokenAsync(cancellationToken);
 
             var filter = $"ProdId eq '{prodId}' and dataAreaId eq '{_d365Config.OrganizationId}'";
-            var url = $"{_d365Config.BaseUrl}{ODataEndpoint}/TSI_Jobs?$filter={Uri.EscapeDataString(filter)}";
+            var url = $"{_d365Config.BaseUrl}{ODataEndpoint}/TSI_Jobs?$filter={Uri.EscapeDataString(filter)}&$expand=Notes";
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

@@ -197,6 +197,7 @@ public class ODataService
             HttpMethod.Get,
             "TSI_Jobs",
             filter: filter,
+            expand: "Notes",
             cancellationToken: cancellationToken);
 
         var response = await _httpClient.SendAsync(request, cancellationToken);

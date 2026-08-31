@@ -367,9 +367,6 @@ public class TSI_Job
     [JsonPropertyName("InventBatchId")]
     public string InventBatchId { get; set; } = string.Empty;
 
-    [JsonPropertyName("GreenHandNote")]
-    public string GreenHandNote { get; set; } = string.Empty;
-
     [JsonPropertyName("ItemNameConsumption")]
     public string ItemNameConsumption { get; set; } = string.Empty;
 
@@ -387,6 +384,28 @@ public class TSI_Job
 
     [JsonPropertyName("RemainInventPhysical")]
     public decimal RemainInventPhysical { get; set; }
+
+    /// <summary>Notes navigation property; populate with $expand=Notes (replaces the removed GreenHandNote computed field)</summary>
+    [JsonPropertyName("Notes")]
+    public List<TSI_JobNote>? Notes { get; set; }
+}
+
+/// <summary>
+/// TSI_Job note - one record per note attached to the production order, retrieved via $expand=Notes
+/// </summary>
+public class TSI_JobNote
+{
+    [JsonPropertyName("dataAreaId")]
+    public string DataAreaId { get; set; } = string.Empty;
+
+    [JsonPropertyName("DocumentId")]
+    public string DocumentId { get; set; } = string.Empty;
+
+    [JsonPropertyName("ProdId")]
+    public string ProdId { get; set; } = string.Empty;
+
+    [JsonPropertyName("GreenHandNote")]
+    public string GreenHandNote { get; set; } = string.Empty;
 }
 
 /// <summary>

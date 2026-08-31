@@ -249,7 +249,7 @@ Verify materials exist before allowing material consumption entry.
 | `TSI_Items` | MES item master data |
 | `TSI_ProdBOMLines` | MES production BOM with warehouse locations |
 | `TSI_Labels` | MES label printing data (includes expanded Logos navigation) |
-| `TSI_Jobs` | MES production jobs |
+| `TSI_Jobs` | MES production jobs (includes expanded Notes navigation) |
 | `WarehouseWorkLines` | Open warehouse work / pick operations |
 | `InventBatchTableV2` | Batch tracking and quarantine status |
 
@@ -317,6 +317,6 @@ For memory foam bed manufacturing, focus on:
 - **TSI_Items** - MES-optimized item master data
 - **TSI_ProdBOMLines** - MES BOM data with warehouse locations
 - **TSI_Labels** - Label printing data with EAN/UDI codes (includes expanded Logos navigation)
-- **TSI_Jobs** - Production job details for MES tracking
+- **TSI_Jobs** - Production job details for MES tracking (includes expanded Notes navigation)
 - **WarehouseWorkLines** - Open warehouse work and pick operations
 - **InventBatchTableV2** - Batch disposition and quarantine tracking
