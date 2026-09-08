@@ -4,7 +4,7 @@ This document provides comprehensive mapping of parameters used by Manufacturing
 
 ## Overview
 
-The MES Integration API enables third-party MES systems to communicate production events to D365 Supply Chain Management. The API supports four standard message types plus two TSI custom message types:
+The MES Integration API enables third-party MES systems to communicate production events to D365 Supply Chain Management. The API supports four standard message types plus three TSI custom message types:
 
 **Standard message types:**
 1. **Start Production Order** (`ProdProductionOrderStart`)
@@ -15,6 +15,7 @@ The MES Integration API enables third-party MES systems to communicate productio
 **TSI custom message types:**
 5. **Inventory Count Journal** (`TSIInventCountJournal`)
 6. **Update Batch Disposition** (`TSIUpdateBatchDisposition`)
+7. **Create Movement Work** (`TSICreateMovementWork`)
 
 ## API Endpoint
 
@@ -270,6 +271,50 @@ Updates the disposition code for a specific inventory batch in D365. Used when M
   "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"ItemNumber\":\"20821\",\"BatchNumber\":\"BATCH001\",\"DispositionCode\":\"Available\"}"
 }
 ```
+
+## 7. Create Movement Work Message
+
+**Message Type:** `TSICreateMovementWork`
+
+Creates warehouse movement work (e.g. returning unused raw materials from the
+production floor to the warehouse) through the async message queue. Reuses the same
+underlying D365 business logic as the standalone synchronous service
+(`TSIMesWebServices/TSIMesWebService/process`), so it can be used interchangeably with
+that endpoint. Prefer this message type when queue-based monitoring and automatic
+retry (up to 3 attempts) are wanted instead of immediate synchronous feedback.
+
+### Parameters
+
+| Parameter              | Type    | Required  | Description                                                                |
+|------------------------|---------|-----------|-----------------------------------------------------------------------------|
+| `ProductionOrderNumber`| String  | Mandatory | Production order the movement work is associated with (required by the queue) |
+| `LicensePlate`         | String  | Mandatory | The license plate to create movement work for                              |
+| `SourceLocation`       | String  | Optional  | Warehouse location the material is moved from                              |
+| `DestinationLocation`  | String  | Optional  | Warehouse location the material is moved to                                |
+| `Quantity`             | Real    | Optional  | Defaults to 0 (whole license plate quantity)                                |
+| `ItemId`               | String  | Optional  | Restricts the movement to a specific item on the license plate             |
+
+> `DataAreaId` is not part of the message content — it is resolved from `_companyId` on
+> the envelope, same as the other TSI message types.
+
+### Example
+
+```json
+{
+  "_companyId": "500",
+  "_messageQueue": "JmgMES3P",
+  "_messageType": "TSICreateMovementWork",
+  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"LicensePlate\":\"LP-2024-001\",\"SourceLocation\":\"Aisle01-Rack01-Shelf01\",\"DestinationLocation\":\"\",\"Quantity\":0,\"ItemId\":\"\"}"
+}
+```
+
+> **Note:** This is an addition, not a replacement, for the standalone synchronous
+> `TSIMesWebServices/TSIMesWebService/process` endpoint — that endpoint keeps working
+> as-is for callers that need immediate success/failure feedback. See
+> [samples/MesIntegration.Samples/Services/MovementWorkService.cs](samples/MesIntegration.Samples/Services/MovementWorkService.cs)
+> for the synchronous client, and
+> [samples/MesIntegration.Samples/Services/MesService.cs](samples/MesIntegration.Samples/Services/MesService.cs)
+> (`CreateMovementWorkQueueAsync`) for this queue-based client.
 
 ## Configuration and Setup
 

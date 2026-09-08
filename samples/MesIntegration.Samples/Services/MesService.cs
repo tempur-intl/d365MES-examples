@@ -164,4 +164,18 @@ public class MesService
             message,
             cancellationToken);
     }
+
+    /// <summary>
+    /// Create warehouse movement work via the message queue, instead of the
+    /// synchronous <see cref="MovementWorkService"/> endpoint.
+    /// </summary>
+    public async Task CreateMovementWorkQueueAsync(
+        CreateMovementWorkQueueMessage message,
+        CancellationToken cancellationToken = default)
+    {
+        await SendMessageAsync(
+            "TSICreateMovementWork",
+            message,
+            cancellationToken);
+    }
 }

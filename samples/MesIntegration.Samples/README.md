@@ -10,7 +10,8 @@ The D365 MES Integration API enables third-party MES systems to communicate prod
 - ✅ Reporting material consumption (picking lists)
 - ✅ Reporting production as finished
 - ✅ Ending production orders
-- ✅ Creating warehouse movement work (return raw materials to warehouse)
+- ✅ Creating warehouse movement work synchronously (return raw materials to warehouse)
+- ✅ Creating warehouse movement work via the message queue (`TSICreateMovementWork`)
 - ✅ Creating inventory count journals (`TSIInventCountJournal`)
 - ✅ Updating batch disposition codes (`TSIUpdateBatchDisposition`)
 
@@ -116,6 +117,7 @@ dotnet run material
 dotnet run raf
 dotnet run end
 dotnet run movement
+dotnet run movementqueue
 dotnet run countjournal
 dotnet run batchdisposition
 ```
@@ -243,7 +245,45 @@ var result = await movementWorkService.CreateMovementWorkAsync(contract);
 
 **Response**: HTTP 200 with the string `Created`.
 
-### 6. Create Inventory Count Journal
+### 6. Create Movement Work (Message Queue)
+
+> Added as an alternative to operation 5 for callers that want movement work handled
+> the same way as the other MES events — queue-based, with automatic retry and
+> monitoring — instead of a synchronous call. It reuses the **same underlying D365
+> business logic** as the synchronous endpoint. Use this instead of operation 5 when
+> instant success/failure feedback isn't required.
+
+```csharp
+var message = new CreateMovementWorkQueueMessage
+{
+    ProductionOrderNumber = "10001147",  // Required by the queue (not by the movement-work logic itself)
+    LicensePlate = "LP-2024-001",         // Required
+    SourceLocation = "Aisle01-Rack01-Shelf01", // Optional
+    DestinationLocation = "",             // Optional
+    Quantity = 0,                         // Optional, defaults to 0 (whole license plate quantity)
+    ItemId = ""                           // Optional
+};
+
+await mesService.CreateMovementWorkQueueAsync(message);
+```
+
+**Use Case**: Same as operation 5 (return unused raw materials to the warehouse), but
+sent through the async MES message queue so it's monitored and retried the same way
+as the other TSI message types.
+
+**Request payload sent to D365**:
+```json
+{
+  "_companyId": "500",
+  "_messageQueue": "JmgMES3P",
+  "_messageType": "TSICreateMovementWork",
+  "_messageContent": "{\"ProductionOrderNumber\":\"10001147\",\"LicensePlate\":\"LP-2024-001\",\"SourceLocation\":\"Aisle01-Rack01-Shelf01\",\"DestinationLocation\":\"\",\"Quantity\":0,\"ItemId\":\"\"}"
+}
+```
+
+> This message is **queue-based** (same as operations 1–4, 7, and 8). Monitor processing status via **Production control → Setup → Manufacturing execution → Manufacturing execution systems integration**.
+
+### 7. Create Inventory Count Journal
 
 ```csharp
 var message = new InventCountJournalMessage
@@ -274,9 +314,9 @@ await mesService.CreateInventCountJournalAsync(message);
 }
 ```
 
-> This message is **queue-based** (same as operations 1–4). Monitor processing status via **Production control → Setup → Manufacturing execution → Manufacturing execution systems integration**.
+> This message is **queue-based** (same as operations 1–4 and 6). Monitor processing status via **Production control → Setup → Manufacturing execution → Manufacturing execution systems integration**.
 
-### 7. Update Batch Disposition
+### 8. Update Batch Disposition
 
 ```csharp
 var message = new UpdateBatchDispositionMessage
@@ -302,7 +342,7 @@ await mesService.UpdateBatchDispositionAsync(message);
 }
 ```
 
-> This message is **queue-based** (same as operations 1–4 and 6). Monitor processing status via **Production control → Setup → Manufacturing execution → Manufacturing execution systems integration**.
+> This message is **queue-based** (same as operations 1–4, 6, and 7). Monitor processing status via **Production control → Setup → Manufacturing execution → Manufacturing execution systems integration**.
 
 ## 🏭 Memory Foam Manufacturing Scenario
 
@@ -315,13 +355,13 @@ This sample simulates producing 100 queen-size memory foam mattresses:
    - Assembly: 3 hours on AssemblyLine-01 (98 good, 2 scrap)
 4. **Finish**: Report 98 good units, 2 scrap units
 5. **End**: Close the production order
-6. **Return**: Create movement work to return unused raw materials to the warehouse
+6. **Return**: Create movement work to return unused raw materials to the warehouse (synchronously, or via the message queue)
 7. **Count**: Create an inventory count journal line to reconcile on-hand quantities at a specific location/license plate
 8. **Disposition**: Update the batch disposition code to release inventory from quarantine
 
 ## 🔍 Monitoring Messages
 
-View message processing status in D365 for operations 1–4, 6, and 7 (queue-based):
+View message processing status in D365 for operations 1–4, 6, 7, and 8 (queue-based):
 
 **Production control → Setup → Manufacturing execution → Manufacturing execution systems integration**
 
@@ -330,11 +370,13 @@ Monitor for:
 - ⏳ Processing: Message in queue
 - ❌ Failed: Review error details and retry
 
-> **Movement work (operation 5)** does not go through this queue. Errors surface immediately as HTTP error responses from `MovementWorkService`, so no async monitoring is needed.
+> **Synchronous movement work (operation 5)** does not go through this queue. Errors surface immediately as HTTP error responses from `MovementWorkService`, so no async monitoring is needed.
 >
-> **Inventory count journal (operation 6)** is queue-based and will appear in the message processor alongside operations 1–4.
+> **Queue-based movement work (operation 6)** uses `TSICreateMovementWork` and appears in the message processor alongside the other TSI message types. Prefer this over operation 5 when you want automatic retry and queue-based monitoring instead of synchronous feedback.
 >
-> **Batch disposition update (operation 7)** is queue-based and will appear in the message processor alongside operations 1–4 and 6.
+> **Inventory count journal (operation 7)** is queue-based and will appear in the message processor alongside operations 1–4.
+>
+> **Batch disposition update (operation 8)** is queue-based and will appear in the message processor alongside operations 1–4 and 6–7.
 
 ## 🛠️ Best Practices
 

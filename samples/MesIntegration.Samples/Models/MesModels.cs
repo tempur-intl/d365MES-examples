@@ -620,3 +620,32 @@ public class MovementWorkRequest
     [JsonPropertyName("_contract")]
     public required MovementWorkContract Contract { get; set; }
 }
+
+/// <summary>
+/// Message content for the <c>TSICreateMovementWork</c> MES message type.
+/// Creates warehouse movement work through the async message queue instead of the
+/// synchronous <c>TSIMesWebServices/TSIMesWebService/process</c> endpoint. Reuses the
+/// same underlying D365 business logic as <see cref="MovementWorkContract"/>, plus a
+/// mandatory <see cref="ProductionOrderNumber"/> since every queue message must be tied
+/// to a production order.
+/// </summary>
+public class CreateMovementWorkQueueMessage
+{
+    [JsonPropertyName("ProductionOrderNumber")]
+    public required string ProductionOrderNumber { get; set; }
+
+    [JsonPropertyName("LicensePlate")]
+    public required string LicensePlate { get; set; }
+
+    [JsonPropertyName("SourceLocation")]
+    public string? SourceLocation { get; set; }
+
+    [JsonPropertyName("DestinationLocation")]
+    public string? DestinationLocation { get; set; }
+
+    [JsonPropertyName("Quantity")]
+    public decimal? Quantity { get; set; }
+
+    [JsonPropertyName("ItemId")]
+    public string? ItemId { get; set; }
+}

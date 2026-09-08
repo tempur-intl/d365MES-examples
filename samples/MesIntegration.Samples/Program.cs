@@ -47,6 +47,7 @@ class Program
         //   dotnet run raf
         //   dotnet run end
         //   dotnet run movement
+        //   dotnet run movementqueue
         //   dotnet run countjournal
         //   dotnet run batchdisposition
         // Omit the argument to run all samples.
@@ -89,6 +90,8 @@ class Program
                 await RunEndProductionOrderSample(mesService, sampleData, logger);
             if (filter is null or "movement")
                 await RunCreateMovementWorkSample(movementWorkService, sampleData, logger);
+            if (filter is null or "movementqueue")
+                await RunCreateMovementWorkQueueSample(mesService, sampleData, logger);
             if (filter is null or "countjournal")
                 await RunCreateInventCountJournalSample(mesService, sampleData, logger);
             if (filter is null or "batchdisposition")
@@ -224,12 +227,36 @@ class Program
             result);
     }
 
+    static async Task RunCreateMovementWorkQueueSample(
+        MesService mesService,
+        SampleDataConfig sampleData,
+        ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 6: Create Movement Work (Message Queue) ---");
+
+        var message = new CreateMovementWorkQueueMessage
+        {
+            ProductionOrderNumber = sampleData.ProductionOrderNumber,
+            LicensePlate = sampleData.MovementWork.LicensePlate,
+            SourceLocation = sampleData.MovementWork.SourceLocation,
+            DestinationLocation = sampleData.MovementWork.DestinationLocation,
+            Quantity = sampleData.MovementWork.Quantity,
+            ItemId = sampleData.MovementWork.ItemId
+            // DataAreaId is not part of the queue contract — it's resolved from _companyId
+        };
+
+        await mesService.CreateMovementWorkQueueAsync(message);
+        logger.LogInformation(
+            "Movement work message queued for license plate {LicensePlate}",
+            message.LicensePlate);
+    }
+
     static async Task RunCreateInventCountJournalSample(
         MesService mesService,
         SampleDataConfig sampleData,
         ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 6: Create Inventory Count Journal ---");
+        logger.LogInformation("\n--- Sample 7: Create Inventory Count Journal ---");
 
         var data = sampleData.InventCountJournal;
         var message = new InventCountJournalMessage
@@ -257,7 +284,7 @@ class Program
         SampleDataConfig sampleData,
         ILogger logger)
     {
-        logger.LogInformation("\n--- Sample 7: Update Batch Disposition ---");
+        logger.LogInformation("\n--- Sample 8: Update Batch Disposition ---");
 
         var data = sampleData.UpdateBatchDisposition;
         var message = new UpdateBatchDispositionMessage
