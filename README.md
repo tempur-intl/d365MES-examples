@@ -71,6 +71,9 @@ sequenceDiagram
     MES->>D365: TSIMesWebService/process
     D365-->>MES: "Created"
 
+    Note over D365,MES: Create Movement Work (Async — Message Queue Alternative)
+    MES->>D365: TSICreateMovementWork
+
     Note over D365,MES: Other Custom Messages (Async — Message Queue)
     MES->>D365: TSIUpdateBatchDisposition
     MES->>D365: TSIInventCountJournal
@@ -110,7 +113,8 @@ MES Integration API examples:
 - ✅ Report as finished
 - ✅ Material consumption (picking lists)
 - ✅ End production order
-- ✅ Create warehouse movement work (return raw materials to warehouse)
+- ✅ Create warehouse movement work synchronously (return raw materials to warehouse)
+- ✅ Create warehouse movement work via the message queue (`TSICreateMovementWork`)
 - ✅ Create inventory count journal (`TSIInventCountJournal`)
 - ✅ Update batch disposition code (`TSIUpdateBatchDisposition`)
 
