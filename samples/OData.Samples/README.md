@@ -12,6 +12,7 @@ D365 exposes extensive data through OData v4 endpoints. This sample demonstrates
 - ✅ TSI Jobs (MES production jobs)
 - ✅ Warehouse Work Lines (warehouse operations)
 - ✅ Item Batches (batch tracking and quarantine)
+- ✅ MES Message Queue (Failed/Queued messages by production order)
 
 ## 🔐 Authentication
 
@@ -63,6 +64,9 @@ Edit `sample-queries.json` with your actual data identifiers:
   "itemBatches": {
     "filter": "dataAreaId eq '500' and BatchDispositionCode eq 'QUARANTINE'",
     "top": 10
+  },
+  "mesQueue": {
+    "prodId": "10002664"
   }
 }
 ```
@@ -89,6 +93,7 @@ dotnet run labels
 dotnet run jobs
 dotnet run worklines
 dotnet run batches
+dotnet run mesqueue
 ```
 
 ## 📝 Sample Queries
@@ -201,6 +206,37 @@ foreach (var batch in batches)
 
 **Use Case**: Track batch information and quarantine status for quality control in MES.
 
+### 7. Query MES Message Queue (Failed/Queued by Production Order)
+
+```csharp
+var messages = await odataService.GetMesQueueMessagesAsync(sampleQueries.MesQueue.ProdId);
+
+foreach (var message in messages)
+{
+    Console.WriteLine($"Message: {message.MessageRecId} ({message.MessageType})");
+    Console.WriteLine($"  Production Order: {message.ProdId}");
+    Console.WriteLine($"  Status: {message.ProcessingState}");
+    Console.WriteLine($"  Sent: {message.MessageDateTime}");
+}
+```
+
+Queries the `TSIJmgMES3PMessageMonitorEntity` — the same entity behind the **Manufacturing
+execution systems integration** monitoring page — filtered to a single production order and, by
+default, only messages in the `Failed` or `Queued` states (the ones that need attention). Pass a
+different set of states via the optional `processingStates` parameter if needed, e.g.
+`GetMesQueueMessagesAsync(prodId, new[] { "Processed" })`.
+
+The underlying OData request combines an OR-chained enum filter with the production order filter:
+
+```
+$filter=(ProcessingState eq Microsoft.Dynamics.DataEntities.SysMessageState'Failed'
+  or ProcessingState eq Microsoft.Dynamics.DataEntities.SysMessageState'Queued')
+  and ProdId eq '10002664'
+```
+
+**Use Case**: Poll D365 for MES messages that are stuck or still waiting to be processed for a
+given production order, without pulling the entire queue history.
+
 ## 🔍 OData Query Syntax
 
 ### Filtering
@@ -252,6 +288,7 @@ Verify materials exist before allowing material consumption entry.
 | `TSI_Jobs` | MES production jobs (includes expanded Notes navigation) |
 | `WarehouseWorkLines` | Open warehouse work / pick operations |
 | `InventBatchTableV2` | Batch tracking and quarantine status |
+| `TSIJmgMES3PMessageMonitorEntity` | MES message queue (JmgMES3P) monitor — same data as the Manufacturing execution systems integration page |
 
 ## 🛠️ Best Practices
 
@@ -320,3 +357,4 @@ For memory foam bed manufacturing, focus on:
 - **TSI_Jobs** - Production job details for MES tracking (includes expanded Notes navigation)
 - **WarehouseWorkLines** - Open warehouse work and pick operations
 - **InventBatchTableV2** - Batch disposition and quarantine tracking
+- **TSIJmgMES3PMessageMonitorEntity** - MES message queue monitor (Failed/Queued/Processed/Cancelled by production order)

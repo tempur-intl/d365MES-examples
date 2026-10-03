@@ -19,5 +19,8 @@
   "itemBatches": {
     "filter": "dataAreaId eq '500' and BatchDispositionCode eq 'QUARANTINE'",
     "top": 10
+  },
+  "mesQueue": {
+    "prodId": "10022539"
   }
 }

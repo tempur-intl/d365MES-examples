@@ -24,6 +24,9 @@ public class SampleQueryConfig
 
     [JsonPropertyName("itemBatches")]
     public ItemBatchesQuery ItemBatches { get; set; } = new();
+
+    [JsonPropertyName("mesQueue")]
+    public MesQueueQuery MesQueue { get; set; } = new();
 }
 
 public class TsiItemQuery
@@ -69,6 +72,12 @@ public class ItemBatchesQuery
 
     [JsonPropertyName("top")]
     public int Top { get; set; }
+}
+
+public class MesQueueQuery
+{
+    [JsonPropertyName("prodId")]
+    public string ProdId { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -471,4 +480,36 @@ public class ItemBatches
     public string DataAreaId { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// TSIJmgMES3PMessageMonitorEntity - MES message queue (JmgMES3P) monitor data, as seen on the
+/// Manufacturing execution systems integration page. <c>ProcessingState</c> is an OData enum
+/// (<c>Microsoft.Dynamics.DataEntities.SysMessageState</c>) with values such as
+/// <c>Queued</c>, <c>Processing</c>, <c>Processed</c>, <c>Failed</c>, and <c>Cancelled</c>.
+/// </summary>
+public class MesQueueMessage
+{
+    [JsonPropertyName("ProdId")]
+    public string ProdId { get; set; } = string.Empty;
+
+    [JsonPropertyName("MessageRecId")]
+    public long MessageRecId { get; set; }
+
+    [JsonPropertyName("ProcessingState")]
+    public string ProcessingState { get; set; } = string.Empty;
+
+    [JsonPropertyName("MessageType")]
+    public string MessageType { get; set; } = string.Empty;
+
+    [JsonPropertyName("MessageDateTime")]
+    public string MessageDateTime { get; set; } = string.Empty;
+
+    [JsonPropertyName("ItemId")]
+    public string ItemId { get; set; } = string.Empty;
+
+    [JsonPropertyName("LastMESResource")]
+    public string LastMESResource { get; set; } = string.Empty;
+
+    [JsonPropertyName("ProductionName")]
+    public string ProductionName { get; set; } = string.Empty;
+}
 

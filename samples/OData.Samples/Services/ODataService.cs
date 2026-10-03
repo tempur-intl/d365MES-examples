@@ -291,4 +291,50 @@ public class ODataService
         _logger.LogInformation("Retrieved {Count} item batches", result?.Value.Count ?? 0);
         return result?.Value ?? new List<ItemBatches>();
     }
+
+    private static readonly string[] DefaultMesQueueProcessingStates = { "Failed", "Queued" };
+
+    /// <summary>
+    /// Query the MES message queue (TSIJmgMES3PMessageMonitorEntity) for a specific production
+    /// order, restricted by default to Failed and Queued messages — the two states that need
+    /// attention on the Manufacturing execution systems integration monitoring page.
+    /// </summary>
+    public async Task<List<MesQueueMessage>> GetMesQueueMessagesAsync(
+        string prodId,
+        IEnumerable<string>? processingStates = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Querying MES message queue for production order {ProdId}", prodId);
+
+        var states = (processingStates ?? DefaultMesQueueProcessingStates).ToList();
+
+        // ProcessingState is an OData enum (Microsoft.Dynamics.DataEntities.SysMessageState) —
+        // each value must use the fully-qualified enum literal, OR-chained together.
+        var stateFilter = string.Join(
+            " or ",
+            states.Select(state => $"ProcessingState eq Microsoft.Dynamics.DataEntities.SysMessageState'{state}'"));
+
+        var filter = $"({stateFilter}) and ProdId eq '{prodId}'";
+
+        using var request = await CreateAuthenticatedRequestAsync(
+            HttpMethod.Get,
+            "TSIJmgMES3PMessageMonitorEntity",
+            filter: filter,
+            cancellationToken: cancellationToken);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Failed to query MES message queue: {Error}", errorContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<ODataResponse<MesQueueMessage>>(
+            cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Retrieved {Count} MES queue messages", result?.Value.Count ?? 0);
+        return result?.Value ?? new List<MesQueueMessage>();
+    }
 }

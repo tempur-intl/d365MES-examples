@@ -71,6 +71,7 @@ class Program
             //   dotnet run jobs
             //   dotnet run worklines
             //   dotnet run batches
+            //   dotnet run mesqueue
             // Omit the argument to run all samples.
             var filter = args.Length > 0 ? args[0].ToLowerInvariant() : null;
 
@@ -86,6 +87,8 @@ class Program
                 await RunWarehouseWorkLinesQuerySample(odataService, sampleQueries, logger);
             if (filter is null or "batches")
                 await RunItemBatchesQuerySample(odataService, sampleQueries, logger);
+            if (filter is null or "mesqueue")
+                await RunMesQueueQuerySample(odataService, sampleQueries, logger);
 
             logger.LogInformation("\n=== All OData query samples completed successfully ===");
         }
@@ -158,6 +161,16 @@ class Program
             top: sampleQueries.ItemBatches.Top);
 
         var json = JsonSerializer.Serialize(batches, new JsonSerializerOptions { WriteIndented = true });
+        Console.WriteLine(json);
+    }
+
+    static async Task RunMesQueueQuerySample(ODataService odataService, SampleQueryConfig sampleQueries, ILogger logger)
+    {
+        logger.LogInformation("\n--- Sample 7: Query MES Message Queue (Failed/Queued by Production Order) ---");
+
+        var messages = await odataService.GetMesQueueMessagesAsync(sampleQueries.MesQueue.ProdId);
+
+        var json = JsonSerializer.Serialize(messages, new JsonSerializerOptions { WriteIndented = true });
         Console.WriteLine(json);
     }
 
