@@ -54,8 +54,8 @@ sequenceDiagram
     D365-->>MES: Updated BOM lines
     MES->>D365: OData: TSI_Items
     D365-->>MES: Updated item data
-    MES->>D365: OData: TSI_Labels
-    D365-->>MES: Updated label data
+    LN->>D365: OData: TSI_Labels
+    D365-->>LN: Updated label data
 
     Note over D365,MES: Start Production Order
     MES->>D365: ProdProductionOrderStart
