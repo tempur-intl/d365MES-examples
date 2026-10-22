@@ -26,11 +26,13 @@ D365IntegrationSamples/
 sequenceDiagram
     participant D365 as Dynamics 365 SCM
     participant MES as Third-Party MES
-    participant IVA as Inventory Visibility
+    participant SB as Azure Service Bus
     participant LN as Lasernet
+    participant IVA as Inventory Visibility
 
     Note over D365,MES: Order Released (ReadyForMES: true)
-    D365->>MES: TSIProductionOrderReleasedToMESBusinessEvent
+    D365-)SB: TSIProductionOrderReleasedToMESBusinessEvent
+    SB-)MES: TSIProductionOrderReleasedToMESBusinessEvent
     MES->>D365: OData: TSI_Jobs
     D365-->>MES: Job details
     MES->>D365: OData: TSI_ProdBOMLines
@@ -43,11 +45,13 @@ sequenceDiagram
     IVA-->>MES: On-hand quantities
 
     Note over D365,MES: Order Removed from MES (ReadyForMES: false)
-    D365->>MES: TSIProductionOrderReleasedToMESBusinessEvent
+    D365-)SB: TSIProductionOrderReleasedToMESBusinessEvent
+    SB-)MES: TSIProductionOrderReleasedToMESBusinessEvent
     MES->>MES: Remove/cancel local job record (no OData lookup)
 
     Note over D365,MES: Order Updated
-    D365->>MES: TSIProductionOrderUpdatedMESEvent
+    D365-)SB: TSIProductionOrderUpdatedMESEvent
+    SB-)MES: TSIProductionOrderUpdatedMESEvent
     MES->>D365: OData: TSI_Jobs
     D365-->>MES: Updated job details
     MES->>D365: OData: TSI_ProdBOMLines
@@ -65,7 +69,8 @@ sequenceDiagram
 
     Note over D365,MES: Report as Finished
     MES->>D365: ProdProductionOrderReportFinished
-    MES->>LN: Print job via Lasernet Service Bus
+    MES-)SB: Print job
+    SB-)LN: Print job
 
     Note over D365,MES: Create Movement Work (Synchronous — Standalone Service)
     MES->>D365: TSIMesWebService/process
@@ -81,6 +86,8 @@ sequenceDiagram
     Note over D365,MES: End Production Order
     MES->>D365: ProdProductionOrderEnd
 ```
+
+> Business events reach the MES through an Azure Service Bus topic subscription, and print jobs reach Lasernet through Service Bus. Both are asynchronous (open arrowheads). All other arrows are direct HTTP calls to D365 or the Inventory Visibility Add-in.
 
 ## 🔐 Authentication Overview
 
